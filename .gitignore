@@ -1,7 +1,9 @@
 HELP.md
 
 *.log
-src/main/resources/application.yaml
+# Ignore only application.yaml
+/src/main/resources/application.yaml
+
 
 ### IntelliJ IDEA ###
 .idea
