@@ -1,14 +1,13 @@
 HELP.md
 
 *.log
-application.yaml
+.env
 
 ### IntelliJ IDEA ###
 .idea
 *.iws
 *.iml
 *.ipr
-target/classes/application.yaml
 
 ### VS Code ###
 .vscode/
