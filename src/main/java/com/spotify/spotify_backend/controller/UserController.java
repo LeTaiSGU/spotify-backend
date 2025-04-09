@@ -18,21 +18,20 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/user")
-    public List<Users> user(){
+    public List<Users> user() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/user/{userId}")
-    public Users getUser(@PathVariable("userId") Long userId){
+    public Users getUser(@PathVariable("userId") Long userId) {
         return userService.getUserById(userId);
     }
 
     @PostMapping("/user")
-    public ApiResponse<Users> createUser(@RequestBody @Valid CreateUserDTO user){
+    public ApiResponse<Users> createUser(@RequestBody @Valid CreateUserDTO user) {
         ApiResponse<Users> apiResponse = new ApiResponse<>();
-//        apiResponse.setResult(userService.createUser(user));
+        apiResponse.setResult(userService.createUser(user));
         return apiResponse;
     }
-
 
 }
