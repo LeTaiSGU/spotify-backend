@@ -40,24 +40,26 @@ public class ArtistController {
 
     // }
 
-    @PostMapping("/artist")
-    public ApiResponse<Artist> createArtist(@RequestPart("artist") artistdto artistDTO,
-            @RequestPart("imgFile") MultipartFile imgFile,
-            HttpServletRequest request) {
-        System.out.println("Content-Type: " + request.getContentType());
-        String imgName = imgFile.getOriginalFilename();
-        System.out.println("Image Name: " + imgName);
-        // artistDTO.setImg(imgName);
-        ApiResponse<Artist> apiResponse = new ApiResponse<>();
-        boolean uploadSuccess = awsS3Service.uploadArtistImage(imgFile, artistDTO.getName());
-        if (!uploadSuccess) {
-            apiResponse.setCode(9999);
-            apiResponse.setMessage("Image upload failed");
-            apiResponse.setResult(null);
-            return apiResponse;
-        }
-        apiResponse.setResult(artistService.createArtist(artistDTO, imgName));
-        apiResponse.setCode(1000);
-        return apiResponse;
-    }
+    // @PostMapping("/artist")
+    // public ApiResponse<Artist> createArtist(@RequestPart("artist") artistdto
+    // artistDTO,
+    // @RequestPart("imgFile") MultipartFile imgFile,
+    // HttpServletRequest request) {
+    // System.out.println("Content-Type: " + request.getContentType());
+    // String imgName = imgFile.getOriginalFilename();
+    // System.out.println("Image Name: " + imgName);
+    // // artistDTO.setImg(imgName);
+    // ApiResponse<Artist> apiResponse = new ApiResponse<>();
+    // boolean uploadSuccess = awsS3Service.uploadArtistImage(imgFile,
+    // artistDTO.getName());
+    // if (!uploadSuccess) {
+    // apiResponse.setCode(9999);
+    // apiResponse.setMessage("Image upload failed");
+    // apiResponse.setResult(null);
+    // return apiResponse;
+    // }
+    // apiResponse.setResult(artistService.createArtist(artistDTO, imgName));
+    // apiResponse.setCode(1000);
+    // return apiResponse;
+    // }
 }
