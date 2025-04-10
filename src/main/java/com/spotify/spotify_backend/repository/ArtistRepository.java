@@ -8,7 +8,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ArtistRepository extends JpaRepository<Artist, Long> {
     // Custom query methods can be defined here if needed
-    // For example, find artists by genre, name, etc.
+    // For example, find artists by genre, name, etc
     Artist findByName(String name);
+
     boolean existsByName(String name);
 }
