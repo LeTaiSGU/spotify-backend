@@ -35,10 +35,10 @@ public class ArtistController {
         return artistService.getAllArtists();
     }
 
-    @GetMapping("/artists/img")
-    public String getMethodName() {
+    // @GetMapping("/artists/img")
+    // public String getMethodName() {
 
-    }
+    // }
 
     @PostMapping("/artist")
     public ApiResponse<Artist> createArtist(@RequestPart("artist") artistdto artistDTO,
