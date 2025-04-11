@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.spotify.spotify_backend.dto.PageResponseDTO;
 import com.spotify.spotify_backend.dto.album.AlbumRequestDTO;
 import com.spotify.spotify_backend.dto.album.AlbumResponseDTO;
+import com.spotify.spotify_backend.dto.album.AlbumUpdateDTO;
 import com.spotify.spotify_backend.exception.AppException;
 import com.spotify.spotify_backend.exception.ErrorCode;
 import com.spotify.spotify_backend.mapper.AlbumMapper;
@@ -67,6 +68,24 @@ public class AlbumService {
                 return pageResponseDTO;
         }
 
+        public PageResponseDTO<AlbumResponseDTO> getAllAlbumsWithoutStatusPaginated(int pageNo, int pageSize,
+                        String sortBy,
+                        String sortDir) {
+                Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                                : Sort.by(sortBy).descending();
+
+                Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+                Page<Album> albumPage = albumRepository.findByStatusTrue(pageable);
+
+                List<AlbumResponseDTO> content = albumPage.getContent().stream()
+                                .map(albumMapper::toDTO)
+                                .collect(Collectors.toList());
+
+                PageResponseDTO<AlbumResponseDTO> pageResponseDTO = createPageDTO(albumPage, content);
+
+                return pageResponseDTO;
+        }
+
         // Lấy album theo id
         public AlbumResponseDTO getAlbumById(Long id) {
                 Album album = albumRepository.findById(id)
@@ -98,19 +117,17 @@ public class AlbumService {
         @Transactional
         public AlbumResponseDTO createAlbum(AlbumRequestDTO albumRequestDTO) {
 
-                System.out.println(albumRequestDTO.getArtistId());
                 Album album = albumMapper.toAlbum(albumRequestDTO, artistRepository);
-                System.out.println(album.getArtist().getArtistId());
                 Album savedAlbum = albumRepository.save(album);
                 return albumMapper.toDTO(savedAlbum);
         }
 
         @Transactional
-        public AlbumResponseDTO updateAlbum(Long id, AlbumRequestDTO albumRequestDTO) {
+        public AlbumResponseDTO updateAlbum(Long id, AlbumUpdateDTO albumUpdateDTO) {
                 Album album = albumRepository.findById(id)
                                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
-                albumMapper.updateAlbumFromDTO(albumRequestDTO, album, artistRepository);
+                albumMapper.updateAlbumFromDTO(albumUpdateDTO, album, artistRepository);
                 album.setUpdatedAt(LocalDateTime.now());
 
                 Album updatedAlbum = albumRepository.save(album);
@@ -120,7 +137,7 @@ public class AlbumService {
         }
 
         @Transactional
-        public Boolean deleteAlbum(Long id) {
+        public Boolean cancelAlbum(Long id) {
                 if (!albumRepository.existsById(id)) {
                         throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
                 }
@@ -128,6 +145,23 @@ public class AlbumService {
                 return true;
         }
 
+        @Transactional
+        public Boolean restoreAlbum(Long id) {
+                if (!albumRepository.existsById(id)) {
+                        throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
+                }
+                albumRepository.updateStatusByAlbumId(id, true);
+                return true;
+        }
+
+        @Transactional
+        public Boolean deleteAlbum(Long id) {
+                if (!albumRepository.existsById(id)) {
+                        throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
+                }
+                albumRepository.deleteById(id);
+                return true;
+        }
         // // Tìm kiếm album theo title
         // public List<AlbumResponseDTO> searchAlbumsByTitle(String title) {
         // List<Album> albums = albumRepository.findByTitleContainingIgnoreCase(title);

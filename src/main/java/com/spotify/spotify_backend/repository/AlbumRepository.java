@@ -12,10 +12,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
 public interface AlbumRepository extends JpaRepository<Album, Long> {
+
+    Page<Album> findByStatusTrue(Pageable pageable);
 
     // Album tồn tại hay không
     boolean existsByTitle(String title);

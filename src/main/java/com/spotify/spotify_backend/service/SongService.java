@@ -59,7 +59,7 @@ public class SongService {
         } catch (RuntimeException e) {
             throw new AppException(ErrorCode.BAD_REQUEST, "Lỗi nghiệp vụ: " + e.getMessage());
         } catch (Exception e) {
-            throw new AppException(ErrorCode.SONG_CREATE_FAILE, "Lỗi không xác định: " + e.getMessage());
+            throw new AppException(ErrorCode.SONG_CREATE_FAILED, "Lỗi không xác định: " + e.getMessage());
         }
     }
 

@@ -10,6 +10,7 @@ import org.mapstruct.factory.Mappers;
 
 import com.spotify.spotify_backend.dto.album.AlbumRequestDTO;
 import com.spotify.spotify_backend.dto.album.AlbumResponseDTO;
+import com.spotify.spotify_backend.dto.album.AlbumUpdateDTO;
 import com.spotify.spotify_backend.exception.AppException;
 import com.spotify.spotify_backend.exception.ErrorCode;
 import com.spotify.spotify_backend.model.Album;
@@ -30,7 +31,8 @@ public interface AlbumMapper {
     Album toAlbum(AlbumRequestDTO albumDTO, @Context ArtistRepository artistRepository);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateAlbumFromDTO(AlbumRequestDTO albumDTO, @MappingTarget Album album,
+    @Mapping(source = "artistId", target = "artist")
+    void updateAlbumFromDTO(AlbumUpdateDTO albumUpdateDTO, @MappingTarget Album album,
             @Context ArtistRepository artistRepository);
 
     // Default method để map artistId thành Artist

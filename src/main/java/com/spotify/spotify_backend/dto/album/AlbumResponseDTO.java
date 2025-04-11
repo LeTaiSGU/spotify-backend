@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 public class AlbumResponseDTO {
     private Long albumId;
-    private String artistId;
+    private Long artistId;
     private String title;
     private LocalDate releaseDate;
     private String description;
