@@ -1,5 +1,6 @@
 package com.spotify.spotify_backend.mapper;
 
+import com.spotify.spotify_backend.dto.artist.artistResponse;
 import com.spotify.spotify_backend.dto.artist.artistdto;
 import com.spotify.spotify_backend.model.Artist;
 import org.mapstruct.Mapper;
@@ -12,4 +13,6 @@ public interface ArtistMapper {
     // ReponseDTO toDTO(Artist artist);
 
     Artist toArtist(artistdto createArtistDTO);
+
+    artistResponse toArtistResponse(Artist artist);
 }
