@@ -1,6 +1,5 @@
 package com.spotify.spotify_backend.controller;
 
-import org.hibernate.query.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +14,7 @@ import com.spotify.spotify_backend.service.ArtistService;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -104,7 +104,7 @@ public class ArtistController {
     }
 
     @PutMapping("/cancel/{id}")
-    public ApiResponse<ArtistResponseDTO> cancelArtist(@RequestParam Long id) {
+    public ApiResponse<ArtistResponseDTO> cancelArtist(@PathVariable Long id) {
         ArtistResponseDTO response = artistService.cancelArtist(id);
         // Tạo ApiResponse từ ArtistResponseDTO
         ApiResponse<ArtistResponseDTO> apiResponse = ApiResponse
@@ -117,7 +117,7 @@ public class ArtistController {
     }
 
     @PutMapping("/restore/{id}")
-    public ApiResponse<ArtistResponseDTO> restoreArtist(@RequestParam Long id) {
+    public ApiResponse<ArtistResponseDTO> restoreArtist(@PathVariable Long id) {
         ArtistResponseDTO response = artistService.restoreArtist(id);
         // Tạo ApiResponse từ ArtistResponseDTO
         ApiResponse<ArtistResponseDTO> apiResponse = ApiResponse
@@ -130,7 +130,7 @@ public class ArtistController {
     }
 
     @PutMapping("/delete/{id}")
-    public ApiResponse<ArtistResponseDTO> deleteArtist(@RequestParam Long id) {
+    public ApiResponse<ArtistResponseDTO> deleteArtist(@PathVariable Long id) {
         ArtistResponseDTO response = artistService.deleteArtist(id);
         // Tạo ApiResponse từ ArtistResponseDTO
         ApiResponse<ArtistResponseDTO> apiResponse = ApiResponse

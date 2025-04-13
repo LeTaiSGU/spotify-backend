@@ -17,6 +17,7 @@ public interface ArtistMapper {
     // Map từ Entity → DTO
     @Mapping(target = "songIds", expression = "java(mapSongsToIds(artist.getSongs()))")
     @Mapping(target = "featuredSongIds", expression = "java(mapSongsToIds(artist.getFeaturedSongs()))")
+
     ArtistResponseDTO toDTO(Artist artist);
 
     // Map từ RequestDTO → Entity khi tạo mới
@@ -33,11 +34,13 @@ public interface ArtistMapper {
     void updateArtistFromDTO(ArtistUpdateDTO dto, @MappingTarget Artist artist);
 
     // Convert Song List → ID List (để trả về client)
-    default Set<Long> mapSongsToIds(Set<Song> songs) {
-        if (songs == null)
-            return null;
+    default Set<Long> mapSongsToIds(Set<com.spotify.spotify_backend.model.Song> songs) {
+        if (songs == null || songs.isEmpty()) {
+            return Set.of(); // <- Trả về empty set thay vì null
+        }
         return songs.stream()
-                .map(Song::getSongId)
+                .map(com.spotify.spotify_backend.model.Song::getSongId)
                 .collect(Collectors.toSet());
     }
+
 }
