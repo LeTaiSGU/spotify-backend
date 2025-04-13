@@ -18,6 +18,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AlbumUpdateDTO {
+
+    private Long albumId;
     @NotBlank(message = "Title không được để trống")
     private String title;
 

@@ -15,7 +15,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AlbumRepository extends JpaRepository<Album, Long> {
 
-    Page<Album> findByStatusTrue(Pageable pageable);
+    Page<Album> findByStatus(Pageable pageable, Boolean status);
 
     // Album tồn tại hay không
     boolean existsByTitle(String title);

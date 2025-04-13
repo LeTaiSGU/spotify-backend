@@ -6,7 +6,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import org.mapstruct.factory.Mappers;
 
 import com.spotify.spotify_backend.dto.album.AlbumRequestDTO;
 import com.spotify.spotify_backend.dto.album.AlbumResponseDTO;
@@ -19,11 +18,11 @@ import com.spotify.spotify_backend.repository.ArtistRepository;
 
 @Mapper(componentModel = "spring")
 public interface AlbumMapper {
-    AlbumMapper INSTANCE = Mappers.getMapper(AlbumMapper.class);
-
+    // Chuyển đổi từ model Album sang AlbumResponseDTO
     @Mapping(source = "artist.artistId", target = "artistId")
     AlbumResponseDTO toDTO(Album album);
 
+    // Chuyển đổi từ AlbumRequestDTO sang model Album
     @Mapping(target = "albumId", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)

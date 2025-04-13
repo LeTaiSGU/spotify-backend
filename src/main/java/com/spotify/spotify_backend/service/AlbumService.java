@@ -20,7 +20,6 @@ import com.spotify.spotify_backend.exception.AppException;
 import com.spotify.spotify_backend.exception.ErrorCode;
 import com.spotify.spotify_backend.mapper.AlbumMapper;
 import com.spotify.spotify_backend.model.Album;
-import com.spotify.spotify_backend.model.Artist;
 import com.spotify.spotify_backend.repository.AlbumRepository;
 import com.spotify.spotify_backend.repository.ArtistRepository;
 
@@ -49,7 +48,7 @@ public class AlbumService {
                                 .build();
         }
 
-        // Phương thức mới hỗ trợ phân trang
+        // Phương thức lấy danh sách hỗ trợ phân trang và sắp xếp
         public PageResponseDTO<AlbumResponseDTO> getAllAlbumsPaginated(int pageNo, int pageSize,
                         String sortBy,
                         String sortDir) {
@@ -68,14 +67,15 @@ public class AlbumService {
                 return pageResponseDTO;
         }
 
-        public PageResponseDTO<AlbumResponseDTO> getAllAlbumsWithoutStatusPaginated(int pageNo, int pageSize,
-                        String sortBy,
-                        String sortDir) {
+        // Phương thức lấy danh sách album theo trạng thái
+        public PageResponseDTO<AlbumResponseDTO> getAllAlbumsByStatusPaginated(int pageNo, int pageSize,
+                        String sortBy, String sortDir,
+                        Boolean status) {
                 Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
                                 : Sort.by(sortBy).descending();
 
                 Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-                Page<Album> albumPage = albumRepository.findByStatusTrue(pageable);
+                Page<Album> albumPage = albumRepository.findByStatus(pageable, status);
 
                 List<AlbumResponseDTO> content = albumPage.getContent().stream()
                                 .map(albumMapper::toDTO)
@@ -119,16 +119,17 @@ public class AlbumService {
 
                 Album album = albumMapper.toAlbum(albumRequestDTO, artistRepository);
                 Album savedAlbum = albumRepository.save(album);
-                return albumMapper.toDTO(savedAlbum);
+                AlbumResponseDTO albumResponseDTO = albumMapper.toDTO(savedAlbum);
+                return albumResponseDTO;
         }
 
         @Transactional
-        public AlbumResponseDTO updateAlbum(Long id, AlbumUpdateDTO albumUpdateDTO) {
-                Album album = albumRepository.findById(id)
+        public AlbumResponseDTO updateAlbum(AlbumUpdateDTO albumUpdateDTO) {
+                Album album = albumRepository.findById(albumUpdateDTO.getAlbumId())
                                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
                 albumMapper.updateAlbumFromDTO(albumUpdateDTO, album, artistRepository);
-                album.setUpdatedAt(LocalDateTime.now());
+                // album.setUpdatedAt(LocalDateTime.now());
 
                 Album updatedAlbum = albumRepository.save(album);
                 // Chuyển đổi Album thành AlbumResponseDTO

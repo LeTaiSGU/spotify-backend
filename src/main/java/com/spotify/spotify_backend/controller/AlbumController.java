@@ -38,17 +38,19 @@ public class AlbumController {
                 return apiResponse;
         }
 
-        @GetMapping("/alltrue")
-        public ApiResponse<PageResponseDTO<AlbumResponseDTO>> getAllAlbumsWithoutStatusPaginated(
+        @GetMapping("/allstatus")
+        public ApiResponse<PageResponseDTO<AlbumResponseDTO>> getAllAlbumsByStatusPaginated(
                         @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
                         @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
                         @RequestParam(value = "sortBy", defaultValue = "title", required = false) String sortBy,
-                        @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir) {
+                        @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
+                        @RequestParam(value = "status", defaultValue = "true", required = false) Boolean status) {
 
-                PageResponseDTO<AlbumResponseDTO> response = albumService.getAllAlbumsWithoutStatusPaginated(pageNo,
+                PageResponseDTO<AlbumResponseDTO> response = albumService.getAllAlbumsByStatusPaginated(pageNo,
                                 pageSize,
                                 sortBy,
-                                sortDir);
+                                sortDir,
+                                status);
                 // Tạo ApiResponse từ PageResponseDTO
                 ApiResponse<PageResponseDTO<AlbumResponseDTO>> apiResponse = ApiResponse
                                 .<PageResponseDTO<AlbumResponseDTO>>builder()
@@ -88,12 +90,11 @@ public class AlbumController {
                 return apiResponse;
         }
 
-        @PutMapping("/update/{id}")
+        @PutMapping("/update")
         public ApiResponse<AlbumResponseDTO> updateAlbum(
-                        @PathVariable Long id,
                         @Valid @RequestBody AlbumUpdateDTO albumUpdateDTO) {
 
-                AlbumResponseDTO response = albumService.updateAlbum(id, albumUpdateDTO);
+                AlbumResponseDTO response = albumService.updateAlbum(albumUpdateDTO);
                 // Tạo ApiResponse từ PageResponseDTO
                 ApiResponse<AlbumResponseDTO> apiResponse = ApiResponse
                                 .<AlbumResponseDTO>builder()

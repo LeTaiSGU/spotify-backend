@@ -1,6 +1,5 @@
 package com.spotify.spotify_backend.mapper;
 
-import com.spotify.spotify_backend.dto.artist.artistResponse;
 import com.spotify.spotify_backend.dto.song.songResponse;
 import com.spotify.spotify_backend.dto.song.songdto;
 import com.spotify.spotify_backend.model.Artist;
