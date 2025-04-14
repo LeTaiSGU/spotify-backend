@@ -1,5 +1,7 @@
 package com.spotify.spotify_backend.service;
 
+import com.spotify.spotify_backend.dto.song.songResponse;
+import com.spotify.spotify_backend.dto.song.songUpdate;
 import com.spotify.spotify_backend.dto.song.songdto;
 import com.spotify.spotify_backend.exception.AppException;
 import com.spotify.spotify_backend.mapper.SongMapper;
@@ -12,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.time.LocalDate;
 
 @Service
@@ -28,38 +32,38 @@ public class SongService {
     private AmazonService awsS3Service;
 
     public List<Song> getAllSongs() {
+
         return songRepository.findAll();
     }
 
     public Song uploadSong(songdto songDto, MultipartFile songFile, MultipartFile imgFile) {
+        Song song = songMapper.toSong(songDto, songMappingHelper);
+        song.setCreatedAt(LocalDate.now());
+
+        // Lưu trước để có songId (dùng cho tên file upload)
+        Song savedSong = songRepository.save(song);
+
+        // Upload songFile và imgFile song song
+        CompletableFuture<String> songUrlFuture = CompletableFuture
+                .supplyAsync(() -> awsS3Service.uploadFile("song_file", songFile, savedSong.getSongId()));
+
+        CompletableFuture<String> imgUrlFuture = CompletableFuture
+                .supplyAsync(() -> awsS3Service.uploadFile("song_img", imgFile, savedSong.getSongId()));
+
         try {
-            Song song = songMapper.toSong(songDto, songMappingHelper);
-            song.setCreatedAt(LocalDate.now());
-            Song savedSong = songRepository.save(song);
+            // Đợi cả hai upload xong
+            String songUrl = songUrlFuture.get();
+            String imgUrl = imgUrlFuture.get();
 
-            // Upload file nhạc
-            String songUrl = awsS3Service.uploadFile("song_file", songFile, savedSong.getSongId());
-            if (songUrl == null || songUrl.isEmpty()) {
-                throw new AppException(ErrorCode.SONG_FILE_UPLOAD_FAILED, "Không thể upload file nhạc");
-            }
+            // Cập nhật URL vào entity đã lưu
+            savedSong.setFileUpload(songUrl);
+            savedSong.setImg(imgUrl);
 
-            // Upload ảnh bài hát
-            String imgUrl = awsS3Service.uploadFile("song_img", imgFile, savedSong.getSongId());
-            if (imgUrl == null || imgUrl.isEmpty()) {
-                throw new AppException(ErrorCode.SONG_IMG_UPLOAD_FAILED);
-            }
-
-            song.setFileUpload(songUrl);
-            song.setImg(imgUrl);
-
-            return songRepository.save(song);
-
-        } catch (AppException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            throw new AppException(ErrorCode.BAD_REQUEST, "Lỗi nghiệp vụ: " + e.getMessage());
-        } catch (Exception e) {
-            throw new AppException(ErrorCode.SONG_CREATE_FAILED, "Lỗi không xác định: " + e.getMessage());
+            return songRepository.save(savedSong);
+        } catch (InterruptedException | ExecutionException e) {
+            // Ghi log lỗi nếu cần
+            Thread.currentThread().interrupt(); // Khôi phục trạng thái interrupt
+            throw new RuntimeException("Upload thất bại: " + e.getMessage(), e);
         }
     }
 
@@ -67,7 +71,35 @@ public class SongService {
     public Song disableSong(Long songId) {
         Song song = songRepository.findById(songId)
                 .orElseThrow(() -> new AppException(ErrorCode.SONG_NOT_FOUND));
-        song.setStatus(false);
+        song.setStatus(!song.getStatus());
         return songRepository.save(song);
     }
+
+    // Edit Song
+    // Edit Song
+    public songResponse updateSong(Long songId, songUpdate songDto, MultipartFile newSongFile,
+            MultipartFile newImgFile) {
+        Song existingSong = songRepository.findById(songId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài hát với ID: " + songId));
+
+        songMapper.updateSongFromDto(songDto, existingSong, songMappingHelper);
+
+        if (newSongFile != null && !newSongFile.isEmpty()) {
+            String newSongUrl = awsS3Service.uploadFile("song_file", newSongFile, songId);
+            existingSong.setFileUpload(newSongUrl);
+        }
+
+        if (newImgFile != null && !newImgFile.isEmpty()) {
+            String newImgUrl = awsS3Service.uploadFile("song_img", newImgFile, songId);
+            existingSong.setImg(newImgUrl);
+        }
+
+        try {
+            songRepository.save(existingSong);
+            return songMapper.toDto(existingSong);
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi cập nhật bài hát: " + e.getMessage(), e);
+        }
+    }
+
 }
