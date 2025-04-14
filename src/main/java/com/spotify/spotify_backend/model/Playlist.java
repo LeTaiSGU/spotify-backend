@@ -7,13 +7,17 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name ="playlist")
+@Table(name = "playlist")
 public class Playlist {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,9 +27,15 @@ public class Playlist {
     @JoinColumn(name = "user_id")
     private Users user;
 
+    @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<PlaylistSong> playlistSongs;
+
+    private String description;
     private String name;
     private LocalDateTime createAt;
-
+    private LocalDateTime updateAt;
+    private Boolean isPlaylistLiked;
     private Boolean isPrivate;
     private String coverImage;
 }
