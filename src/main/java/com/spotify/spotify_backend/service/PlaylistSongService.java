@@ -36,7 +36,7 @@ public class PlaylistSongService {
 
     public showPlaylistSong getPlaylistSongsByPlaylistId(Long playlistId) {
         Playlist playlist = playlistRepository.findById(playlistId)
-                .orElseThrow(() -> new AppException(ErrorCode.PLAYLIST_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
         List<PlaylistSong> songs = playListSongRepo.findByPlaylist_PlaylistId(playlistId);
         showPlaylistSong dto = playlistSongMapper.toShowPlaylistSong(playlist, songs);
         return dto;
