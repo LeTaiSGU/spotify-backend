@@ -52,7 +52,6 @@ public class SongController {
 
         Song savedSong = songService.uploadSong(song, songFile, imgFile);
         songResponse response = songMapper.toDto(savedSong);
-
         ApiResponse<songResponse> apiResponse = new ApiResponse<>();
         apiResponse.setResult(response);
         return apiResponse;

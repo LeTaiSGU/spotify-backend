@@ -30,7 +30,7 @@ public class AmazonService {
         String fileName = folder + "/" + id + extension;
 
         // Buffer lớn hơn (128KB thay vì mặc định 8KB)
-        try (InputStream inputStream = new BufferedInputStream(file.getInputStream(), 64 * 1024)) {
+        try (InputStream inputStream = new BufferedInputStream(file.getInputStream(), 32 * 1024)) {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(fileName)
