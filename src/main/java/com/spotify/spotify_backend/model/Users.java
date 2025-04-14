@@ -1,6 +1,5 @@
 package com.spotify.spotify_backend.model;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
@@ -25,6 +24,9 @@ public class Users {
 
     @Column(name = "pass_hash")
     private String passHash;
+
+    @Column(name = "fullname", nullable = false)
+    private String fullName;
 
     @Column(name = "email", unique = true, nullable = false)
     private String email;
