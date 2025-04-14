@@ -3,7 +3,7 @@ package com.spotify.spotify_backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Set;
 
 @Getter
@@ -23,24 +23,20 @@ public class Song {
     private Album album;
 
     private String songName;
-    private LocalDateTime duration; // Thời gian bài hát
+    private long duration;
 
-    // Nghệ sĩ chính
     @ManyToOne
     @JoinColumn(name = "artist_id", nullable = false)
     private Artist artist;
 
     @ManyToMany
-    @JoinTable(
-            name = "song_featured_artists",
-            joinColumns = @JoinColumn(name = "song_id"),
-            inverseJoinColumns = @JoinColumn(name = "artist_id")
-    )
+    @JoinTable(name = "song_featured_artists", joinColumns = @JoinColumn(name = "song_id"), inverseJoinColumns = @JoinColumn(name = "artist_id"))
     private Set<Artist> featuredArtists;
 
     private String img;
     private String fileUpload;
     private String description;
 
-    private LocalDateTime createdAt;
+    private LocalDate createdAt;
+    private Boolean status;
 }

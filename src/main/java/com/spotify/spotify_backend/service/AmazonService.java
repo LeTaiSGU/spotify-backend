@@ -1,41 +1,46 @@
 package com.spotify.spotify_backend.service;
 
-import com.spotify.spotify_backend.model.Artist;
-import com.spotify.spotify_backend.model.Song;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AmazonService {
 
-    private final S3Client s3Client;  // Thay AmazonS3Client thành S3Client của SDK 2.x
+    private final S3Client s3Client;
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
 
-    public String uploadFile(String folder, MultipartFile file, long id) {
-        String extension = getFileExtension(file.getOriginalFilename());
-        String fileName = folder + "/" + id + "_" + UUID.randomUUID() + extension;
+    public String uploadFile(String folder, MultipartFile file, Long id) {
+        long startTime = System.currentTimeMillis(); // Bắt đầu tính thời gian
 
-        try (InputStream inputStream = file.getInputStream()) {
+        String extension = getFileExtension(file.getOriginalFilename());
+        String fileName = folder + "/" + id + extension;
+
+        // Buffer lớn hơn (128KB thay vì mặc định 8KB)
+        try (InputStream inputStream = new BufferedInputStream(file.getInputStream(), 64 * 1024)) {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(fileName)
                     .contentType(file.getContentType())
-                    .contentLength(file.getSize())
                     .build();
 
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, file.getSize()));
+
+            long endTime = System.currentTimeMillis(); // Kết thúc tính thời gian
+            System.out.println("Upload hoàn tất trong " + (endTime - startTime) + "ms");
 
             return s3Client.utilities()
                     .getUrl(builder -> builder.bucket(bucketName).key(fileName))
@@ -44,38 +49,30 @@ public class AmazonService {
             throw new RuntimeException("Upload file thất bại!", e);
         }
     }
-    private String getFileExtension(String fileName) {
+
+    public String getFileExtension(String fileName) {
         int index = fileName.lastIndexOf(".");
         return (index != -1) ? fileName.substring(index) : "";
     }
 
-    public boolean uploadArtistImage(MultipartFile file, String artistName) {
-
-        String fileExtension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.'));
-
-        // Tạo tên file mới với artistName và đuôi file
-        String fileName = "artist_img/" +  artistName + fileExtension;
-        System.out.println("File name: " + fileName);
-        try (InputStream inputStream = file.getInputStream()) {
-            // Tạo PutObjectRequest với các tham số thích hợp
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(fileName)
-                    .contentType(file.getContentType())
-                    .contentLength(file.getSize())
-                    .build();
-
-            // Upload file lên S3
-            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, file.getSize()));
-
-            // Kiểm tra URL đã được tạo và trả về true nếu thành công
-            String fileUrl = s3Client.utilities().getUrl(builder -> builder.bucket(bucketName).key(fileName)).toString();
-            System.out.println("File URL: " + fileUrl);
-            return true;
-        } catch (IOException e) {
-            throw new RuntimeException("Upload ảnh artist thất bại!", e);
-        }
+    public String getFileUrl(String folder, String name) {
+        String fileName = folder + "/" + name;
+        return s3Client.utilities()
+                .getUrl(builder -> builder.bucket(bucketName).key(fileName))
+                .toString();
     }
 
+    // Xoa file trong s3
+    public void deleteFile(String key) {
+        try {
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
+            s3Client.deleteObject(deleteObjectRequest);
+        } catch (S3Exception e) {
+            throw new RuntimeException("Xoá file thất bại: " + key, e);
+        }
+    }
 
 }
