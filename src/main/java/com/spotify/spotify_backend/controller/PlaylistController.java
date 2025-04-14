@@ -3,6 +3,7 @@ package com.spotify.spotify_backend.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.spotify.spotify_backend.dto.ApiResponse;
+import com.spotify.spotify_backend.dto.PageResponseDTO;
 import com.spotify.spotify_backend.dto.playlist.playlistDto;
 import com.spotify.spotify_backend.dto.playlist.playlistUp;
 import com.spotify.spotify_backend.dto.playlistsong.showPlaylistSong;
@@ -41,6 +43,32 @@ public class PlaylistController {
         apiResponse.setCode(1000);
         apiResponse.setMessage("List of all playlists");
         return apiResponse;
+    }
+
+    // Get by page
+    @GetMapping("/page")
+    public ApiResponse<PageResponseDTO<Playlist>> getAllPlaylistsPaged(
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "playlistId") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+
+        Page<Playlist> page = playlistService.getAllPlaylistsPaged(pageNo, pageSize, sortBy, sortDir);
+
+        PageResponseDTO<Playlist> response = PageResponseDTO.<Playlist>builder()
+                .content(page.getContent())
+                .pageNo(page.getNumber())
+                .pageSize(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .last(page.isLast())
+                .build();
+
+        return ApiResponse.<PageResponseDTO<Playlist>>builder()
+                .code(1000)
+                .message("Lấy danh sách playlist thành công")
+                .result(response)
+                .build();
     }
 
     @PostMapping("/create")

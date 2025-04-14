@@ -1,5 +1,11 @@
 package com.spotify.spotify_backend.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+import com.spotify.spotify_backend.dto.PageResponseDTO;
 import com.spotify.spotify_backend.dto.song.songResponse;
 import com.spotify.spotify_backend.dto.song.songUpdate;
 import com.spotify.spotify_backend.dto.song.songdto;
@@ -10,7 +16,6 @@ import com.spotify.spotify_backend.model.Song;
 import com.spotify.spotify_backend.repository.SongRepository;
 import com.spotify.spotify_backend.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,7 +42,37 @@ public class SongService {
         return songRepository.findAll();
     }
 
+    public Page<songResponse> getAllSongPage(int pageNo, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("songId").ascending());
+        Page<Song> songPage = songRepository.findAll(pageable);
+        return songPage.map(songMapper::toDto);
+    }
+
+    // all by status
+    public PageResponseDTO<songResponse> getAllSongsByStatusPaginated(int pageNo, int pageSize,
+            String sortBy, String sortDir, Boolean status) {
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        Page<Song> songPage = songRepository.findAllByStatus(status, pageable);
+        Page<songResponse> songResponsePage = songPage.map(songMapper::toDto);
+
+        return PageResponseDTO.<songResponse>builder()
+                .content(songResponsePage.getContent())
+                .pageNo(songResponsePage.getNumber())
+                .pageSize(songResponsePage.getSize())
+                .totalElements(songResponsePage.getTotalElements())
+                .totalPages(songResponsePage.getTotalPages())
+                .last(songResponsePage.isLast())
+                .build();
+    }
+
     public Song uploadSong(songdto songDto, MultipartFile songFile, MultipartFile imgFile) {
+        // Kiểm tra trùng tên bài hát
+        if (songRepository.existsBySongName(songDto.getSongName())) {
+            throw new IllegalArgumentException("Tên bài hát đã tồn tại!");
+        }
+
         Song song = songMapper.toSong(songDto, songMappingHelper);
         song.setCreatedAt(LocalDate.now());
 

@@ -6,8 +6,8 @@ import lombok.*;
 import java.time.LocalDate;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
 @Setter
@@ -16,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @NoArgsConstructor
 @Entity
 @Table(name = "artists")
+@EntityListeners(AuditingEntityListener.class) // Kích hoạt Auditing
 public class Artist {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,9 +25,20 @@ public class Artist {
         private String name;
         private String img;
         private String description;
-        private LocalDate created_at;
+
+        @CreatedDate
+        @Column(updatable = false) // Không cho phép cập nhật lại
+        private LocalDate createdAt;
+
+        // @LastModifiedDate
+        // private LocalDateTime updatedAt;
+
+        @OneToMany(mappedBy = "artist")
+        private Set<Song> songs; // Danh sách bài hát của nghệ sĩ
 
         @ManyToMany(mappedBy = "featuredArtists")
         // @JsonManagedReference
         private Set<Song> featuredSongs;
+
+        Boolean status; // Trạng thái nghệ sĩ (có thể là true hoặc false)
 }

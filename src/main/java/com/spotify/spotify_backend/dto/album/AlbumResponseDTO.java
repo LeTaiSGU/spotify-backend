@@ -1,19 +1,23 @@
 package com.spotify.spotify_backend.dto.album;
 
-import java.time.LocalDate;
-import com.spotify.spotify_backend.model.Artist;
-
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+import java.time.LocalDate;
+
 @Getter
 @Setter
-public class AlbumDTO {
+@Builder
+public class AlbumResponseDTO {
     private Long albumId;
-    private Artist artist;
+    private Long artistId;
     private String title;
     private LocalDate releaseDate;
     private String description;
     private String coverImage;
-    private String type; // EP or Album
+    private String type;
+    private LocalDate createdAt;
+    // private LocalDateTime updatedAt;
 }

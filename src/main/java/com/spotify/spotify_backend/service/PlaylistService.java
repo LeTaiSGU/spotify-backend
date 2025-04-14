@@ -4,6 +4,10 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,6 +40,17 @@ public class PlaylistService {
 
     public List<Playlist> getAllPlaylists() {
         return playlistRepository.findAll();
+    }
+
+    public Page<Playlist> getAllPlaylistsPaged(int pageNo, int pageSize, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+        return playlistRepository.findAll(pageable);
+    }
+
+    public Page<Playlist> getAllPlaylistsPage(int pageNo, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        return playlistRepository.findAll(pageable);
     }
 
     public Playlist createPlaylist(playlistDto newplaylist) {
