@@ -13,4 +13,9 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class loginResponse {
     boolean isAuthenicated;
+    String accessToken; // JWT token
+    String userName;
+    String email;
+    String role; // "USER" hoặc "ADMIN"
+    String authProvider; // "LOCAL" hoặc "GOOGLE"
 }

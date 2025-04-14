@@ -9,11 +9,11 @@ import java.time.LocalDate;
 @Data
 public class CreateUserDTO {
 
-    @Size(min = 8,message = "USER_INVALID")
+    @Size(min = 8, message = "USER_INVALID")
     private String userName;
 
     @Size(min = 8, message = "PASSWORD_INVALID")
-    private String passHash;
+    private String password;
 
     @Email
     private String email;
