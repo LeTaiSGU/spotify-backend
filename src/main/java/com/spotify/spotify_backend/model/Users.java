@@ -25,7 +25,7 @@ public class Users {
     @Column(name = "pass_hash")
     private String passHash;
 
-    @Column(name = "fullname", nullable = true)
+    @Column(name = "fullname", nullable = false)
     private String fullName;
 
     @Column(name = "email", unique = true, nullable = false)

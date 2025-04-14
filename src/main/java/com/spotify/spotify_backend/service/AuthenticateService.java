@@ -51,6 +51,7 @@ public class AuthenticateService {
         Users user = new Users();
         user.setUserName(createUserDTO.getUserName());
         user.setEmail(createUserDTO.getEmail());
+        user.setFullName(createUserDTO.getFullname());
         user.setPassHash(passwordEncoder.encode(createUserDTO.getPassword()));
         user.setDob(createUserDTO.getDob());
         user.setPremium(createUserDTO.isPremium());
@@ -87,6 +88,7 @@ public class AuthenticateService {
             GoogleIdToken.Payload payload = idToken.getPayload();
             String email = payload.getEmail();
             String username = email.split("@")[0];
+            String fullName = (String) payload.get("name");
 
             Users user = userRepository.findByAuthProviderAndEmail("GOOGLE", email)
                     .orElseGet(() -> {
@@ -99,6 +101,7 @@ public class AuthenticateService {
                         Users newUser = new Users();
                         newUser.setEmail(email);
                         newUser.setUserName(finalUsername);
+                        newUser.setFullName(fullName != null ? fullName : finalUsername);
                         newUser.setRole("USER");
                         newUser.setAuthProvider("GOOGLE");
                         newUser.setPremium(false);
