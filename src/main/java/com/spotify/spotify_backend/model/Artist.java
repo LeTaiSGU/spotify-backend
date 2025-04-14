@@ -34,8 +34,8 @@ public class Artist {
         // @LastModifiedDate
         // private LocalDateTime updatedAt;
 
-        @OneToMany(mappedBy = "artist")
-        private Set<Song> songs; // Danh sách bài hát của nghệ sĩâ
+        // @OneToMany(mappedBy = "artist")
+        // private Set<Song> songs; // Danh sách bài hát của nghệ sĩ
 
         @ManyToMany(mappedBy = "featuredArtists")
         private Set<Song> featuredSongs;

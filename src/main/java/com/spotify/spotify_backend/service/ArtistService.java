@@ -18,8 +18,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +31,9 @@ public class ArtistService {
 
         @Autowired
         private ArtistMapper artistMapper;
+
+        @Autowired
+        private AmazonService awsS3Service;
 
         private <T> PageResponseDTO<T> createPageDTO(Page<?> page, List<T> content) {
                 return PageResponseDTO.<T>builder()
@@ -107,23 +112,55 @@ public class ArtistService {
 
         // Phương thức tạo mới nghệ sĩ
         @Transactional
-        public ArtistResponseDTO createArtist(ArtistRequestDTO artistRequestDTO) {
-
+        public ArtistResponseDTO createArtist(ArtistRequestDTO artistRequestDTO, MultipartFile img) {
                 Artist artist = artistMapper.toArtist(artistRequestDTO);
                 Artist savedArtist = artistRepository.save(artist);
-                ArtistResponseDTO artistResponseDTO = artistMapper.toDTO(savedArtist);
-                return artistResponseDTO;
+
+                if (img != null && !img.isEmpty()) {
+                        try {
+                                String imgUrl = awsS3Service.uploadFile("artist_img", img, savedArtist.getArtistId());
+                                savedArtist.setImg(imgUrl);
+                                savedArtist = artistRepository.save(savedArtist);
+                        } catch (Exception e) {
+                                throw new RuntimeException("Upload ảnh thất bại: " + e.getMessage(), e);
+                        }
+                }
+
+                return artistMapper.toDTO(savedArtist);
         }
 
         // Phương thức cập nhật nghệ sĩ
         @Transactional
-        public ArtistResponseDTO updateArtist(ArtistUpdateDTO artistUpdateDTO) {
+        public ArtistResponseDTO updateArtist(ArtistUpdateDTO artistUpdateDTO, MultipartFile newImg) {
                 Artist artist = artistRepository.findById(artistUpdateDTO.getArtistId())
                                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+                // Cập nhật thông tin text
                 artistMapper.updateArtistFromDTO(artistUpdateDTO, artist);
+
+                // Nếu có ảnh mới
+                if (newImg != null && !newImg.isEmpty()) {
+                        // Xóa ảnh cũ nếu có
+                        String oldImgUrl = artist.getImg();
+                        if (oldImgUrl != null && !oldImgUrl.isBlank()) {
+                                try {
+                                        awsS3Service.deleteFile(oldImgUrl);
+                                } catch (Exception e) {
+                                        System.err.println("Xoá ảnh cũ thất bại: " + e.getMessage());
+                                }
+                        }
+
+                        // Upload ảnh mới
+                        try {
+                                String newImgUrl = awsS3Service.uploadFile("artist_img", newImg, artist.getArtistId());
+                                artist.setImg(newImgUrl);
+                        } catch (Exception e) {
+                                throw new RuntimeException("Upload ảnh mới thất bại: " + e.getMessage(), e);
+                        }
+                }
+
                 Artist updatedArtist = artistRepository.save(artist);
-                ArtistResponseDTO artistResponseDTO = artistMapper.toDTO(updatedArtist);
-                return artistResponseDTO;
+                return artistMapper.toDTO(updatedArtist);
         }
 
         // Phương thức hủy nghệ sĩ

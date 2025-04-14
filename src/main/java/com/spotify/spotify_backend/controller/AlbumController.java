@@ -11,14 +11,13 @@ import com.spotify.spotify_backend.dto.album.AlbumResponseDTO;
 import com.spotify.spotify_backend.dto.album.AlbumUpdateDTO;
 import com.spotify.spotify_backend.service.AlbumService;
 
-import jakarta.validation.Valid;
-
 @RestController
 @RequestMapping("/api/album")
 public class AlbumController {
         @Autowired
         private AlbumService albumService;
 
+        @CrossOrigin(origins = "http://localhost:5173")
         @GetMapping("/all")
         public ApiResponse<PageResponseDTO<AlbumResponseDTO>> getAllAlbumsPaginated(
                         @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
@@ -78,7 +77,7 @@ public class AlbumController {
 
         @PostMapping("/create")
         public ApiResponse<AlbumResponseDTO> createAlbum(
-                        @Valid @RequestPart AlbumRequestDTO albumRequestDTO,
+                        @RequestPart("albumRequestDTO") AlbumRequestDTO albumRequestDTO,
                         @RequestPart("coverImage") MultipartFile coverImage) {
 
                 AlbumResponseDTO response = albumService.createAlbum(albumRequestDTO, coverImage);
@@ -94,9 +93,10 @@ public class AlbumController {
 
         @PutMapping("/update")
         public ApiResponse<AlbumResponseDTO> updateAlbum(
-                        @Valid @RequestBody AlbumUpdateDTO albumUpdateDTO) {
+                        @RequestPart AlbumUpdateDTO albumUpdateDTO,
+                        @RequestPart("coverImage") MultipartFile coverImage) {
 
-                AlbumResponseDTO response = albumService.updateAlbum(albumUpdateDTO);
+                AlbumResponseDTO response = albumService.updateAlbum(albumUpdateDTO, coverImage);
                 // Tạo ApiResponse từ PageResponseDTO
                 ApiResponse<AlbumResponseDTO> apiResponse = ApiResponse
                                 .<AlbumResponseDTO>builder()

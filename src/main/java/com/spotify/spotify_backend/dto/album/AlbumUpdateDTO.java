@@ -20,22 +20,10 @@ import lombok.Setter;
 public class AlbumUpdateDTO {
 
     private Long albumId;
-    @NotBlank(message = "Title không được để trống")
     private String title;
-
-    @PastOrPresent(message = "Ngày phát hành không được trong tương lai")
-    @NotNull(message = "Ngày phát hành không được để trống")
     private LocalDate releaseDate;
-
     private String description;
-
-    @NotBlank(message = "Cover image không được để trống")
     private String coverImage;
-
-    @NotNull(message = "ID nghệ sĩ không được để trống")
     private Long artistId;
-
-    @NotBlank(message = "Type không được để trống")
-    @Pattern(regexp = "^(EP|Album)$", message = "Type chỉ được là 'EP' hoặc 'Album'")
     private String type;
 }
