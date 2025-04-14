@@ -36,9 +36,9 @@ public class Album {
 
     @CreatedDate
     @Column(updatable = false) // Không cho phép cập nhật lại
-    private LocalDateTime createdAt;
+    private LocalDate createdAt;
 
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
+    // @LastModifiedDate
+    // private LocalDateTime updatedAt;
     private Boolean status; // Trạng thái album (có thể là true hoặc false)
 }
