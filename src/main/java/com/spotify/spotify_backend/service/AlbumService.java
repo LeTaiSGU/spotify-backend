@@ -1,6 +1,7 @@
 package com.spotify.spotify_backend.service;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.spotify.spotify_backend.dto.PageResponseDTO;
 import com.spotify.spotify_backend.dto.album.AlbumRequestDTO;
@@ -35,6 +37,9 @@ public class AlbumService {
 
         @Autowired
         private AlbumMapper albumMapper;
+
+        @Autowired
+        private AmazonService awsS3Service;
 
         private <T> PageResponseDTO<T> createPageDTO(Page<?> page, List<T> content) {
                 return PageResponseDTO.<T>builder()
@@ -114,12 +119,31 @@ public class AlbumService {
         }
 
         @Transactional
-        public AlbumResponseDTO createAlbum(AlbumRequestDTO albumRequestDTO) {
+        public AlbumResponseDTO createAlbum(AlbumRequestDTO albumRequestDTO, MultipartFile coverImage) {
 
                 Album album = albumMapper.toAlbum(albumRequestDTO, artistRepository);
                 Album savedAlbum = albumRepository.save(album);
-                AlbumResponseDTO albumResponseDTO = albumMapper.toDTO(savedAlbum);
-                return albumResponseDTO;
+
+                // Upload coverImage lên AWS S3
+                CompletableFuture<String> coverImageUrlFuture = CompletableFuture
+                                .supplyAsync(() -> awsS3Service.uploadFile("album_coverImage", coverImage,
+                                                savedAlbum.getAlbumId()));
+
+                try {
+                        // Đợi upload xong
+                        String coverImageUrl = coverImageUrlFuture.get();
+                        // Cập nhật URL vào entity đã lưu
+                        savedAlbum.setCoverImage(coverImageUrl);
+                        // Lưu lại album với URL đã cập nhật
+                        Album updatedAlbum = albumRepository.save(savedAlbum);
+                        // Chuyển đổi Album thành AlbumResponseDTO
+                        AlbumResponseDTO albumResponseDTO = albumMapper.toDTO(updatedAlbum);
+                        return albumResponseDTO;
+
+                } catch (Exception e) {
+                        // Ghi log lỗi nếu cần
+                        throw new RuntimeException("Upload thất bại: " + e.getMessage(), e);
+                }
         }
 
         @Transactional

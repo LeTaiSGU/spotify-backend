@@ -2,6 +2,7 @@ package com.spotify.spotify_backend.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.spotify.spotify_backend.dto.ApiResponse;
 import com.spotify.spotify_backend.dto.PageResponseDTO;
@@ -77,9 +78,10 @@ public class AlbumController {
 
         @PostMapping("/create")
         public ApiResponse<AlbumResponseDTO> createAlbum(
-                        @Valid @RequestBody AlbumRequestDTO albumRequestDTO) {
+                        @Valid @RequestPart AlbumRequestDTO albumRequestDTO,
+                        @RequestPart("coverImage") MultipartFile coverImage) {
 
-                AlbumResponseDTO response = albumService.createAlbum(albumRequestDTO);
+                AlbumResponseDTO response = albumService.createAlbum(albumRequestDTO, coverImage);
                 // Tạo ApiResponse từ PageResponseDTO
                 ApiResponse<AlbumResponseDTO> apiResponse = ApiResponse
                                 .<AlbumResponseDTO>builder()

@@ -4,7 +4,6 @@ import com.spotify.spotify_backend.dto.artist.ArtistRequestDTO;
 import com.spotify.spotify_backend.dto.artist.ArtistResponseDTO;
 import com.spotify.spotify_backend.dto.artist.ArtistUpdateDTO;
 import com.spotify.spotify_backend.model.Artist;
-import com.spotify.spotify_backend.model.Song;
 
 import org.mapstruct.*;
 
