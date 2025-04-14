@@ -16,15 +16,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = RuntimeException.class)
     ResponseEntity<ApiResponse> handlingException(RuntimeException exception) {
-        // Nên log exception để debug
-        // logger.error("Unexpected error", exception);
-
-        ApiResponse apiResponse = ApiResponse.builder()
-                .code(ErrorCode.UNCATEGORIZED.getCode())
-                .message("Lỗi hệ thống, vui lòng thử lại sau")
-                .build();
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiResponse);
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setCode(ErrorCode.UNCATEGORIZED.getCode());
+        apiResponse.setMessage(ErrorCode.UNCATEGORIZED.getMessage());
+        return ResponseEntity.badRequest().body(apiResponse);
     }
     // @ExceptionHandler(value = RuntimeException.class)
     // ResponseEntity<ApiResponse> handlingException(RuntimeException exception) {
@@ -61,20 +56,20 @@ public class GlobalExceptionHandler {
     // }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    ResponseEntity<ApiResponse> handlingValidation(MethodArgumentNotValidException ex) {
-        // Tạo danh sách lỗi validation
-        List<String> errors = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                .collect(Collectors.toList());
-
+    ResponseEntity<ApiResponse> handlingValidation(MethodArgumentNotValidException exception) {
+        String enumKey = exception.getFieldError().getDefaultMessage();
+        ErrorCode errorCode = ErrorCode.UNCATEGORIZED;
+        try {
+            errorCode = ErrorCode.valueOf(enumKey);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
         ApiResponse apiResponse = new ApiResponse();
-        apiResponse.setCode(5100); // Mã lỗi cho validation
-        apiResponse.setMessage("Lỗi validation");
-        apiResponse.setResult(errors);
+        apiResponse.setCode(errorCode.getCode());
+        apiResponse.setMessage(errorCode.getMessage());
         return ResponseEntity.badRequest().body(apiResponse);
     }
+
     // @ExceptionHandler(value = MethodArgumentNotValidException.class)
     // ResponseEntity<ApiResponse>
     // handlingValidation(MethodArgumentNotValidException exception) {

@@ -7,7 +7,6 @@ import java.time.LocalDate;
 import java.util.Set;
 
 import org.springframework.data.annotation.CreatedDate;
-// import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
@@ -35,9 +34,10 @@ public class Artist {
         // private LocalDateTime updatedAt;
 
         @OneToMany(mappedBy = "artist")
-        private Set<Song> songs; // Danh sách bài hát của nghệ sĩâ
+        private Set<Song> songs; // Danh sách bài hát của nghệ sĩ
 
         @ManyToMany(mappedBy = "featuredArtists")
+        // @JsonManagedReference
         private Set<Song> featuredSongs;
 
         Boolean status; // Trạng thái nghệ sĩ (có thể là true hoặc false)

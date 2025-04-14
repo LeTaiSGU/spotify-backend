@@ -25,6 +25,5 @@ public class PlaylistSong {
     @JoinColumn(name = "song_id")
     private Song song;
 
-    private Boolean liked;
     private LocalDateTime addedAt;
 }
