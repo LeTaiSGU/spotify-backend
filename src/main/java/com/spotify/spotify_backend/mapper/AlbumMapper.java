@@ -25,7 +25,7 @@ public interface AlbumMapper {
     // Chuyển đổi từ AlbumRequestDTO sang model Album
     @Mapping(target = "albumId", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
+    // @Mapping(target = "updatedAt", ignore = true)
     @Mapping(source = "artistId", target = "artist")
     Album toAlbum(AlbumRequestDTO albumDTO, @Context ArtistRepository artistRepository);
 
