@@ -35,4 +35,4 @@ jwt:
   expiration: 86400000
 
 google:
-  clientId: your_google_client_id_here # Thêm Client ID từ Google
+  clientId: 474604047510-k2b2ejrdjnvj96p7b565fh80i3sm9o8e.apps.googleusercontent.com

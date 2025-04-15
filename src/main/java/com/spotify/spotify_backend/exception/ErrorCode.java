@@ -19,6 +19,7 @@ public enum ErrorCode {
     RESOURCE_NOT_FOUND(4004, "Không tìm thấy tài nguyên"),
     SONG_CREATE_FAILE(5200, "Không tạo được bài hát"),
     SONG_NOT_FOUND(5201, "Bài hát không tồn tại"),
+    USER_NOT_GOOGLE(5204, "Người dùng này không có tài khoản google"),
     SONG_FILE_UPLOAD_FAILED(5202, "Không upload được file bài hát"),
     SONG_IMG_UPLOAD_FAILED(5203, "Không upload được hình bài hát"),
     ARTIST_EXISTED(5300, "Nghệ sĩ đã tồn tại");

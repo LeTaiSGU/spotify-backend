@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -39,7 +40,6 @@ public class AuthenticateService {
                 .build();
     }
 
-    // Đăng ký người dùng mới
     public String signup(CreateUserDTO createUserDTO) {
         if (userRepository.existsByEmail(createUserDTO.getEmail())) {
             throw new AppException(ErrorCode.EMAIL_EXISTED);
@@ -62,33 +62,37 @@ public class AuthenticateService {
         return jwtUtil.generateToken(user.getUserId(), user.getEmail(), user.getRole());
     }
 
-    // Đăng nhập thông thường
     public String login(LoginRequest loginRequest) {
         Users user = userRepository.findByEmailOrUserName(loginRequest.getIdentifier(), loginRequest.getIdentifier())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        // Kiểm tra mật khẩu (chỉ áp dụng cho LOCAL)
         if ("LOCAL".equals(user.getAuthProvider()) &&
                 !passwordEncoder.matches(loginRequest.getPassword(), user.getPassHash())) {
             throw new AppException(ErrorCode.PASSWORD_INVALID);
         }
 
-        // Tạo JWT
         return jwtUtil.generateToken(user.getUserId(), user.getEmail(), user.getRole());
     }
 
-    // Đăng nhập bằng Google
     public String googleLogin(GoogleAuthRequest googleAuthRequest) {
+        String accessToken = googleAuthRequest.getAccessToken();
+        if (accessToken == null || accessToken.isEmpty()) {
+            throw new AppException(ErrorCode.INVALID_GOOGLE_TOKEN);
+        }
+
         try {
-            GoogleIdToken idToken = googleIdTokenVerifier().verify(googleAuthRequest.getIdToken());
-            if (idToken == null) {
+            // Gọi API Google để lấy thông tin người dùng từ access_token
+            RestTemplate restTemplate = new RestTemplate();
+            String googleUserInfoUrl = "https://www.googleapis.com/oauth2/v3/userinfo?access_token=" + accessToken;
+            GoogleUserInfo userInfo = restTemplate.getForObject(googleUserInfoUrl, GoogleUserInfo.class);
+
+            if (userInfo == null || userInfo.getEmail() == null) {
                 throw new AppException(ErrorCode.INVALID_GOOGLE_TOKEN);
             }
 
-            GoogleIdToken.Payload payload = idToken.getPayload();
-            String email = payload.getEmail();
+            String email = userInfo.getEmail();
             String username = email.split("@")[0];
-            String fullName = (String) payload.get("name");
+            String fullName = userInfo.getName();
 
             Users user = userRepository.findByAuthProviderAndEmail("GOOGLE", email)
                     .orElseGet(() -> {
@@ -109,8 +113,30 @@ public class AuthenticateService {
                     });
 
             return jwtUtil.generateToken(user.getUserId(), user.getEmail(), user.getRole());
-        } catch (GeneralSecurityException | IOException e) {
+        } catch (Exception e) {
             throw new AppException(ErrorCode.GOOGLE_LOGIN_FAILED);
         }
+    }
+}
+
+// Class để map thông tin từ Google API
+class GoogleUserInfo {
+    private String email;
+    private String name;
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

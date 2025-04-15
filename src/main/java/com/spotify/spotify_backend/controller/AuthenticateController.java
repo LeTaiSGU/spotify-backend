@@ -34,7 +34,7 @@ public class AuthenticateController {
                 return ResponseEntity.ok("Login successful");
         }
 
-        @PostMapping("/google-login")
+        @PostMapping("/google")
         public ResponseEntity<String> googleLogin(@Valid @RequestBody GoogleAuthRequest googleAuthRequest,
                         HttpServletResponse response) {
                 String token = authenticateService.googleLogin(googleAuthRequest);
