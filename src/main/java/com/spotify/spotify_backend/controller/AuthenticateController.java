@@ -3,6 +3,7 @@ package com.spotify.spotify_backend.controller;
 import com.spotify.spotify_backend.dto.users.CreateUserDTO;
 import com.spotify.spotify_backend.dto.users.GoogleAuthRequest;
 import com.spotify.spotify_backend.dto.users.LoginRequest;
+import com.spotify.spotify_backend.model.Users;
 import com.spotify.spotify_backend.service.AuthenticateService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,7 +24,7 @@ public class AuthenticateController {
                         HttpServletResponse response) {
                 String token = authenticateService.signup(createUserDTO);
                 addJwtToCookie(token, response);
-                return ResponseEntity.ok("Signup successful");
+                return ResponseEntity.ok(token); // Trả về token thay vì "Signup successful"
         }
 
         @PostMapping("/login")
@@ -31,7 +32,7 @@ public class AuthenticateController {
                         HttpServletResponse response) {
                 String token = authenticateService.login(loginRequest);
                 addJwtToCookie(token, response);
-                return ResponseEntity.ok("Login successful");
+                return ResponseEntity.ok(token); // Trả về token thay vì "Login successful"
         }
 
         @PostMapping("/google")
@@ -39,7 +40,7 @@ public class AuthenticateController {
                         HttpServletResponse response) {
                 String token = authenticateService.googleLogin(googleAuthRequest);
                 addJwtToCookie(token, response);
-                return ResponseEntity.ok("Google login successful");
+                return ResponseEntity.ok(token); // Trả về token thay vì "Google login successful"
         }
 
         private void addJwtToCookie(String token, HttpServletResponse response) {
@@ -50,5 +51,22 @@ public class AuthenticateController {
                 cookie.setMaxAge(24 * 60 * 60); // 1 ngày
                 cookie.setAttribute("SameSite", "Strict");
                 response.addCookie(cookie);
+        }
+}
+
+@RestController
+@RequestMapping("/api/user")
+@RequiredArgsConstructor
+class UserController {
+
+        private final AuthenticateService authenticateService;
+
+        @GetMapping("/me")
+        public ResponseEntity<Users> getCurrentUser(@RequestHeader("Authorization") String token) {
+                if (token != null && token.startsWith("Bearer ")) {
+                        token = token.substring(7);
+                }
+                Users user = authenticateService.getCurrentUser(token);
+                return ResponseEntity.ok(user);
         }
 }

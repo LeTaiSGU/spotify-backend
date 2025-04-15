@@ -1,9 +1,5 @@
 package com.spotify.spotify_backend.service;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.gson.GsonFactory;
 import com.spotify.spotify_backend.config.JwtUtil;
 import com.spotify.spotify_backend.dto.users.CreateUserDTO;
 import com.spotify.spotify_backend.dto.users.GoogleAuthRequest;
@@ -14,14 +10,9 @@ import com.spotify.spotify_backend.model.Users;
 import com.spotify.spotify_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -32,13 +23,6 @@ public class AuthenticateService {
     private final JwtUtil jwtUtil;
     @Value("${google.clientId}")
     private String googleClientId;
-
-    @Bean
-    public GoogleIdTokenVerifier googleIdTokenVerifier() {
-        return new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
-                .setAudience(Collections.singletonList(googleClientId))
-                .build();
-    }
 
     public String signup(CreateUserDTO createUserDTO) {
         if (userRepository.existsByEmail(createUserDTO.getEmail())) {
@@ -59,7 +43,10 @@ public class AuthenticateService {
         user.setAuthProvider("LOCAL");
 
         userRepository.save(user);
-        return jwtUtil.generateToken(user.getUserId(), user.getEmail(), user.getRole());
+        System.out.println("User created with role: " + user.getRole());
+        String token = jwtUtil.generateToken(user.getUserId(), user.getEmail(), user.getRole());
+        System.out.println("Generated token for signup: " + token); // Debug token
+        return token;
     }
 
     public String login(LoginRequest loginRequest) {
@@ -71,7 +58,10 @@ public class AuthenticateService {
             throw new AppException(ErrorCode.PASSWORD_INVALID);
         }
 
-        return jwtUtil.generateToken(user.getUserId(), user.getEmail(), user.getRole());
+        System.out.println("User logged in with role: " + user.getRole());
+        String token = jwtUtil.generateToken(user.getUserId(), user.getEmail(), user.getRole());
+        System.out.println("Generated token for login: " + token); // Debug token
+        return token;
     }
 
     public String googleLogin(GoogleAuthRequest googleAuthRequest) {
@@ -81,7 +71,6 @@ public class AuthenticateService {
         }
 
         try {
-            // Gọi API Google để lấy thông tin người dùng từ access_token
             RestTemplate restTemplate = new RestTemplate();
             String googleUserInfoUrl = "https://www.googleapis.com/oauth2/v3/userinfo?access_token=" + accessToken;
             GoogleUserInfo userInfo = restTemplate.getForObject(googleUserInfoUrl, GoogleUserInfo.class);
@@ -109,17 +98,25 @@ public class AuthenticateService {
                         newUser.setRole("USER");
                         newUser.setAuthProvider("GOOGLE");
                         newUser.setPremium(false);
+                        System.out.println("New Google user created with role: " + newUser.getRole());
                         return userRepository.save(newUser);
                     });
 
-            return jwtUtil.generateToken(user.getUserId(), user.getEmail(), user.getRole());
+            String token = jwtUtil.generateToken(user.getUserId(), user.getEmail(), user.getRole());
+            System.out.println("Generated token for Google login: " + token); // Debug token
+            return token;
         } catch (Exception e) {
             throw new AppException(ErrorCode.GOOGLE_LOGIN_FAILED);
         }
     }
+
+    public Users getCurrentUser(String token) {
+        Long userId = jwtUtil.getUserIdFromToken(token);
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    }
 }
 
-// Class để map thông tin từ Google API
 class GoogleUserInfo {
     private String email;
     private String name;

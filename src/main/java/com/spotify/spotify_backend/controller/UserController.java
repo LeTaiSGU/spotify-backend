@@ -1,5 +1,6 @@
 package com.spotify.spotify_backend.controller;
 
+import com.spotify.spotify_backend.config.JwtUtil;
 import com.spotify.spotify_backend.dto.ApiResponse;
 import com.spotify.spotify_backend.dto.users.CreateUserDTO;
 import com.spotify.spotify_backend.model.Users;
@@ -16,6 +17,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @GetMapping("/user")
     public List<Users> user() {
@@ -34,4 +38,12 @@ public class UserController {
         return apiResponse;
     }
 
+    @GetMapping("/user/me")
+    public Users getCurrentUser(@RequestHeader("Authorization") String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        Long userId = jwtUtil.getUserIdFromToken(token);
+        return userService.getUserById(userId);
+    }
 }

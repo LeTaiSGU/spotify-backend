@@ -42,4 +42,7 @@ public class Users {
 
     @Column(name = "auth_provider", nullable = false)
     private String authProvider; // "LOCAL" hoặc "GOOGLE"
+
+    @Column(name = "avatar")
+    private String avatar;
 }
