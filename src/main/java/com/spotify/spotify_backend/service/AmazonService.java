@@ -13,6 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -31,10 +33,17 @@ public class AmazonService {
 
         // Buffer lớn hơn (128KB thay vì mặc định 8KB)
         try (InputStream inputStream = new BufferedInputStream(file.getInputStream(), 32 * 1024)) {
+            // Thêm metadata cho Cache-Control
+            Map<String, String> metadata = new HashMap<>();
+            metadata.put("Cache-Control", "no-cache, no-store, must-revalidate");
+            metadata.put("Pragma", "no-cache");
+            metadata.put("Expires", "0");
+
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(fileName)
                     .contentType(file.getContentType())
+                    .metadata(metadata)
                     .build();
 
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, file.getSize()));
