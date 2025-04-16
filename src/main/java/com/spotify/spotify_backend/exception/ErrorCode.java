@@ -22,7 +22,8 @@ public enum ErrorCode {
     SONG_CREATE_FAILE(5005, "Khong tao duoc song"),
     PLAYLIST_NOT_FOUND(5008, "Playlist không tồn tại"),
     ARTIST_EXISTED(5006, "Artist đã tồn tại"),
-    SONG_NOT_FOUND(5007, "Song không tồn tại");
+    SONG_NOT_FOUND(5007, "Song không tồn tại"),
+    SONG_ALREADY_EXISTS(5009, "Song already exists in playlist");
 
     private int code;
     private String message;

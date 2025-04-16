@@ -11,6 +11,7 @@ import org.mapstruct.Mappings;
 import com.spotify.spotify_backend.dto.playlistsong.PlaylistSongDto;
 import com.spotify.spotify_backend.dto.playlistsong.createDto;
 import com.spotify.spotify_backend.dto.playlistsong.showPlaylistSong;
+import com.spotify.spotify_backend.dto.song.songResponse;
 import com.spotify.spotify_backend.model.Playlist;
 import com.spotify.spotify_backend.model.PlaylistSong;
 
@@ -30,11 +31,33 @@ public interface PlaylistSongMapper {
         @Mapping(target = "duration", source = "song.duration")
         PlaylistSongDto toDto(PlaylistSong playlistSong);
 
-        default showPlaylistSong toShowPlaylistSong(Playlist playlist,
-                        List<PlaylistSong> playlistSongs) {
-                List<PlaylistSongDto> songDtos = playlistSongs.stream()
+        default showPlaylistSong toShowPlaylistSong(Playlist playlist, List<PlaylistSong> playlistSongs) {
+                List<songResponse> songDtos = playlistSongs.stream()
                                 .filter(ps -> ps.getPlaylist().getPlaylistId().equals(playlist.getPlaylistId()))
-                                .map(this::toDto)
+                                .map(ps -> {
+                                        songResponse response = new songResponse();
+                                        response.setSongId(ps.getSong().getSongId());
+
+                                        // Add null check for Album
+                                        if (ps.getSong().getAlbum() != null) {
+                                                response.setAlbumId(ps.getSong().getAlbum().getAlbumId());
+                                        }
+
+                                        // Add null check for Artist
+                                        if (ps.getSong().getArtist() != null) {
+                                                response.setArtistId(ps.getSong().getArtist().getArtistId());
+                                                response.setArtistName(ps.getSong().getArtist().getName());
+                                        }
+
+                                        response.setSongName(ps.getSong().getSongName());
+                                        response.setDuration(ps.getSong().getDuration());
+                                        response.setFileUpload(ps.getSong().getFileUpload());
+                                        response.setCreatedAt(ps.getSong().getCreatedAt());
+                                        response.setStatus(ps.getSong().getStatus());
+                                        response.setImg(ps.getSong().getImg());
+                                        response.setDescription(ps.getSong().getDescription());
+                                        return response;
+                                })
                                 .collect(Collectors.toList());
 
                 return showPlaylistSong.builder()

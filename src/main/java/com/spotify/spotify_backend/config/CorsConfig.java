@@ -16,7 +16,7 @@ public class CorsConfig {
                         .allowedOrigins("http://localhost:3000") // Cho phép frontend
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
-                        .allowCredentials(true); // Nếu dùng cookie hoặc token
+                        .allowCredentials(true);
             }
         };
     }
