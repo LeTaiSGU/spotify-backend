@@ -29,3 +29,10 @@ aws:
   credentials:
     access-key: ${AWS_ACCESS_KEY}
     secret-key: ${AWS_SECRET_KEY}
+
+jwt:
+  secret: X7k9pM2qJ4rL8vN6bH3yT5wZ1xC4dF6gR9jP2mQ8uY5tW3eV0iA6sK4oL7nJ9hB2cD5fG8rT1vY4mP6qW3xZ9jL2kN5hB8rT0vC4dF6g # Thay bằng chuỗi ngẫu nhiên mạnh
+  expiration: 86400000
+
+google:
+  clientId: 474604047510-k2b2ejrdjnvj96p7b565fh80i3sm9o8e.apps.googleusercontent.com
