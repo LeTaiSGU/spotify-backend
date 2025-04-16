@@ -19,6 +19,8 @@ import com.spotify.spotify_backend.model.Playlist;
 import com.spotify.spotify_backend.service.PlaylistService;
 import com.spotify.spotify_backend.service.PlaylistSongService;
 
+import lombok.extern.java.Log;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -92,11 +94,11 @@ public class PlaylistController {
     }
 
     @PutMapping("update/{id}")
-    public ApiResponse<Playlist> editPlaylist(@PathVariable String id,
+    public ApiResponse<Playlist> editPlaylist(@PathVariable Long id,
             @RequestPart("playlist") playlistUp updatePlaylist,
             @RequestPart(value = "avatar", required = false) MultipartFile avatar) {
         ApiResponse<Playlist> apiResponse = new ApiResponse<>();
-        Playlist playlist = playlistService.editPlaylist(updatePlaylist, avatar, Long.parseLong(id));
+        Playlist playlist = playlistService.editPlaylist(updatePlaylist, avatar, id);
         apiResponse.setResult(playlist);
         apiResponse.setMessage("Playlist updated successfully");
         return apiResponse;

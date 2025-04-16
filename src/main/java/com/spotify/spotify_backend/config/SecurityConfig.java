@@ -30,6 +30,13 @@ public class SecurityConfig {
                         "/"
         };
 
+        private static final String[] USER_ENDPOINTS = {
+                        "/api/**",
+                        "/api/playlists/**",
+                        "/api/playlists/update/**",
+                        "/api/songs/**"
+        };
+
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 http
@@ -40,7 +47,7 @@ public class SecurityConfig {
                                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                                                 .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                                                .requestMatchers("/api/**").hasAnyRole("USER", "ADMIN")
+                                                .requestMatchers(USER_ENDPOINTS).hasAnyRole("USER", "ADMIN")
                                                 .anyRequest().authenticated())
                                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

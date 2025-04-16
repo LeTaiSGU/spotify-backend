@@ -90,9 +90,8 @@ public class SongService {
             String songUrl = songUrlFuture.get();
             String imgUrl = imgUrlFuture.get();
 
-            // Cập nhật URL vào entity đã lưu
-            savedSong.setFileUpload(songUrl);
-            savedSong.setImg(imgUrl);
+            savedSong.setFileUpload(songUrl + "?t=" + System.currentTimeMillis());
+            savedSong.setImg(imgUrl + "?t=" + System.currentTimeMillis());
 
             return songRepository.save(savedSong);
         } catch (InterruptedException | ExecutionException e) {
