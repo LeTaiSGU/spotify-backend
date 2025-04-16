@@ -94,7 +94,7 @@ public class AlbumController {
         @PutMapping("/update")
         public ApiResponse<AlbumResponseDTO> updateAlbum(
                         @RequestPart AlbumUpdateDTO albumUpdateDTO,
-                        @RequestPart("coverImage") MultipartFile coverImage) {
+                        @RequestPart(value = "coverImage", required = false) MultipartFile coverImage) {
 
                 AlbumResponseDTO response = albumService.updateAlbum(albumUpdateDTO, coverImage);
                 // Tạo ApiResponse từ PageResponseDTO

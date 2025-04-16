@@ -148,7 +148,6 @@ public class AlbumService {
                 album.setTitle(albumUpdateDTO.getTitle());
                 album.setReleaseDate(albumUpdateDTO.getReleaseDate());
                 album.setType(albumUpdateDTO.getType());
-
                 // Nếu có ảnh mới
                 if (coverImage != null && !coverImage.isEmpty()) {
                         // Nếu có ảnh cũ thì xóa khỏi AWS S3
@@ -170,6 +169,9 @@ public class AlbumService {
                         } catch (Exception e) {
                                 throw new RuntimeException("Upload ảnh mới thất bại: " + e.getMessage(), e);
                         }
+                } else {
+                        // Nếu không có ảnh mới thì giữ nguyên ảnh cũ
+                        album.setCoverImage(album.getCoverImage());
                 }
 
                 // Lưu lại album
