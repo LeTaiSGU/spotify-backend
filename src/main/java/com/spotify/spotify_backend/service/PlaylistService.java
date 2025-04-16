@@ -64,19 +64,31 @@ public class PlaylistService {
 
     public Playlist editPlaylist(playlistUp playlistUp, MultipartFile avatar, Long id) {
         Playlist playlist = playlistRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.SONG_NOT_FOUND));
-        playlistMapper.updatePlaylistFromDto(playlistUp, playlist);
-        try {
-            // Upload ảnh đại diện
-            CompletableFuture<String> Avatar = CompletableFuture
-                    .supplyAsync(() -> awsS3Service.uploadFile("playlist_img", avatar, id));
+                .orElseThrow(() -> new AppException(ErrorCode.PLAYLIST_NOT_FOUND));
 
-            String playlistAvatar = Avatar.get(); // Có thể ném InterruptedException hoặc ExecutionException
-            playlist.setCoverImage(playlistAvatar);
-        } catch (InterruptedException | ExecutionException e) {
-            Thread.currentThread().interrupt(); // Khôi phục trạng thái interrupt nếu bị Interrupted
-            throw new RuntimeException("Lỗi upload ảnh playlist", e);
+        playlistMapper.updatePlaylistFromDto(playlistUp, playlist);
+
+        // Only upload avatar if it's not null
+        if (avatar != null && !avatar.isEmpty()) {
+            try {
+                // Upload ảnh đại diện
+                CompletableFuture<String> Avatar = CompletableFuture
+                        .supplyAsync(() -> awsS3Service.uploadFile("playlist_img", avatar, id));
+
+                String playlistAvatar = Avatar.get();
+                // Thêm query string với timestamp để tránh cache
+                playlist.setCoverImage(playlistAvatar + "?t=" + System.currentTimeMillis());
+            } catch (InterruptedException | ExecutionException e) {
+                Thread.currentThread().interrupt();
+                e.printStackTrace();
+                Throwable rootCause = e.getCause();
+                if (rootCause != null) {
+                    System.err.println("Lỗi gốc khi upload ảnh: " + rootCause.getMessage());
+                }
+                throw new RuntimeException("Lỗi upload ảnh playlist", e);
+            }
         }
+
         return playlistRepository.save(playlist);
     }
 
@@ -87,7 +99,7 @@ public class PlaylistService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy playlist với ID: " + playlistId));
 
         // Xóa avatar từ S3 trước
-        if (playlist.getCoverImage() != null) {
+        if (!"/src/assets/default.png".equals(playlist.getCoverImage())) {
             String key = extractS3KeyFromUrl(playlist.getCoverImage());
             awsS3Service.deleteFile(key);
         }

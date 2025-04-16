@@ -16,8 +16,9 @@ public class songResponse {
     private Long songId;
     private Long albumId;
     private Long artistId;
+    private String artistName;
     private String songName;
-    private Integer duration;
+    private Long duration;
     private String fileUpload;
     private LocalDate createdAt;
     private Boolean status;

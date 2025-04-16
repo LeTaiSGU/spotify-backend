@@ -38,8 +38,10 @@ public class UserService {
             throw new AppException(ErrorCode.EMAIL_EXISTED);
         }
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-        request.setPassHash(passwordEncoder.encode(request.getPassHash()));
+        request.setPassword(passwordEncoder.encode(request.getPassword()));
         Users newUser = userMapper.toUsers(request);
+        newUser.setAuthProvider("LOCAL"); // Gán giá trị mặc định
+        newUser.setRole("USER"); // Gán giá trị mặc định
         return userRepository.save(newUser);
     }
 

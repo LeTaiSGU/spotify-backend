@@ -9,18 +9,21 @@ import java.time.LocalDate;
 
 @Data
 public class CreateUserDTO {
-
-    @Size(min = 8, message = "USER_INVALID")
+    @NotBlank(message = "Tên người dùng bắt buộc")
     private String userName;
 
-    @Size(min = 8, message = "PASSWORD_INVALID")
-    private String passHash;
+    @NotBlank(message = "Họ tên bắt buộc")
+    private String fullname;
 
-    @NotBlank(message = "FULLNAME_INVALID")
-    private String fullName;
+    @NotBlank(message = "Mật khẩu bắt buộc")
+    @Size(min = 8, message = "Mật khẩu phải có ít nhất 8 ký tự")
+    private String password;
 
-    @Email
+    @NotBlank(message = "Email bắt buộc")
+    @Email(message = "Email không hợp lệ")
     private String email;
+
     private LocalDate dob;
+
     private boolean isPremium = false;
 }

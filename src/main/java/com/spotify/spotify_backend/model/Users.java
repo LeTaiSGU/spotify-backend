@@ -37,4 +37,12 @@ public class Users {
     @Column(name = "is_premium")
     private boolean isPremium;
 
+    @Column(name = "role", nullable = false)
+    private String role; // "USER" hoặc "ADMIN"
+
+    @Column(name = "auth_provider", nullable = false)
+    private String authProvider; // "LOCAL" hoặc "GOOGLE"
+
+    @Column(name = "avatar")
+    private String avatar;
 }
