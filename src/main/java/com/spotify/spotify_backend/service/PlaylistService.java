@@ -87,7 +87,7 @@ public class PlaylistService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy playlist với ID: " + playlistId));
 
         // Xóa avatar từ S3 trước
-        if (playlist.getCoverImage() != null) {
+        if (!"/src/assets/default.png".equals(playlist.getCoverImage())) {
             String key = extractS3KeyFromUrl(playlist.getCoverImage());
             awsS3Service.deleteFile(key);
         }

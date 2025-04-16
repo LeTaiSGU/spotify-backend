@@ -25,9 +25,12 @@ public interface SongMapper {
     })
     Song toSong(songdto songDto, @Context SongMappingHelper helper);
 
-    @Mapping(target = "artistId", source = "artist.artistId")
-    @Mapping(target = "albumId", source = "album.albumId")
-    @Mapping(target = "artists_id", expression = "java(mapArtistIds(song.getFeaturedArtists()))")
+    @Mappings({
+            @Mapping(target = "artistId", source = "artist.artistId"),
+            @Mapping(target = "artistName", source = "artist.name"),
+            @Mapping(target = "albumId", source = "album.albumId"),
+            @Mapping(target = "artists_id", expression = "java(mapArtistIds(song.getFeaturedArtists()))")
+    })
     songResponse toDto(Song song);
 
     default Set<Long> mapArtistIds(Set<Artist> artists) {

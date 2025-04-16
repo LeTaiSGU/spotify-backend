@@ -18,5 +18,5 @@ public class ArtistRequestDTO {
     private String description;
 
     @Builder.Default
-    private Boolean status = true; // Trạng thái nghệ sĩ (có thể là true hoặc false)
+    private Boolean status = true;
 }

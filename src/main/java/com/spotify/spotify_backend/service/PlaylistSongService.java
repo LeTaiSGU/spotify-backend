@@ -36,18 +36,24 @@ public class PlaylistSongService {
 
     public showPlaylistSong getPlaylistSongsByPlaylistId(Long playlistId) {
         Playlist playlist = playlistRepository.findById(playlistId)
-                .orElseThrow(() -> new AppException(ErrorCode.PLAYLIST_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
         List<PlaylistSong> songs = playListSongRepo.findByPlaylist_PlaylistId(playlistId);
         showPlaylistSong dto = playlistSongMapper.toShowPlaylistSong(playlist, songs);
         return dto;
     }
 
     public PlaylistSong addSongToPlaylist(Long playlistId, Long songId) {
+        // Check if song already exists in playlist
+        PlaylistSong existingSong = playListSongRepo.findByPlaylist_PlaylistIdAndSong_SongId(playlistId, songId);
+        if (existingSong != null) {
+            throw new AppException(ErrorCode.SONG_ALREADY_EXISTED);
+        }
+        // If song doesn't exist, add it
         PlaylistSong playlistSong = PlaylistSong.builder()
                 .playlist(playlistRepository.findById(playlistId)
-                        .orElseThrow(() -> new RuntimeException("Playlist not found")))
+                        .orElseThrow(() -> new AppException(ErrorCode.PLAYLIST_NOT_FOUND)))
                 .song(songRepository.findById(songId)
-                        .orElseThrow(() -> new RuntimeException("Song not found")))
+                        .orElseThrow(() -> new AppException(ErrorCode.SONG_NOT_FOUND)))
                 .addedAt(java.time.LocalDateTime.now())
                 .build();
         return playListSongRepo.save(playlistSong);
