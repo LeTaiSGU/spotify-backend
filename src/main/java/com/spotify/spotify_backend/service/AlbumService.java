@@ -178,21 +178,14 @@ public class AlbumService {
         }
 
         @Transactional
-        public Boolean cancelAlbum(Long id) {
-                if (!albumRepository.existsById(id)) {
-                        throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
-                }
-                albumRepository.updateStatusByAlbumId(id, false);
-                return true;
-        }
-
-        @Transactional
-        public Boolean restoreAlbum(Long id) {
-                if (!albumRepository.existsById(id)) {
-                        throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
-                }
-                albumRepository.updateStatusByAlbumId(id, true);
-                return true;
+        public AlbumResponseDTO updateStatus(Long id) {
+                Album album = albumRepository.findById(id)
+                                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+                // Chuyển đổi trạng thái
+                Boolean newStatus = !album.getStatus();
+                album.setStatus(newStatus);
+                albumRepository.save(album);
+                return albumMapper.toDTO(album);
         }
 
         @Transactional

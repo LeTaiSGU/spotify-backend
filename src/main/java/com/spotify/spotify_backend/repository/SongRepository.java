@@ -2,6 +2,8 @@ package com.spotify.spotify_backend.repository;
 
 import com.spotify.spotify_backend.model.Song;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,5 +18,7 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     boolean existsBySongId(Long id);
 
     Page<Song> findAllByStatus(Boolean status, Pageable pageable);
+
+    List<Song> findByArtist_ArtistIdAndStatus(Long artistId, Boolean status);
 
 }

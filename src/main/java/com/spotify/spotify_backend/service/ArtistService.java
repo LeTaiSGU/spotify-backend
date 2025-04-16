@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+
 import java.util.stream.Collectors;
 
 @Service
@@ -163,26 +163,14 @@ public class ArtistService {
                 return artistMapper.toDTO(updatedArtist);
         }
 
-        // Phương thức hủy nghệ sĩ
         @Transactional
-        public ArtistResponseDTO cancelArtist(Long artistId) {
+        public ArtistResponseDTO updateArtistStatus(Long artistId) {
                 Artist artist = artistRepository.findById(artistId)
                                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
-                artist.setStatus(false);
+                // Chuyển đổi trạng thái
+                artist.setStatus(!artist.getStatus());
                 Artist updatedArtist = artistRepository.save(artist);
-                ArtistResponseDTO artistResponseDTO = artistMapper.toDTO(updatedArtist);
-                return artistResponseDTO;
-        }
-
-        // Phương thức khôi phục nghệ sĩ
-        @Transactional
-        public ArtistResponseDTO restoreArtist(Long artistId) {
-                Artist artist = artistRepository.findById(artistId)
-                                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
-                artist.setStatus(true);
-                Artist updatedArtist = artistRepository.save(artist);
-                ArtistResponseDTO artistResponseDTO = artistMapper.toDTO(updatedArtist);
-                return artistResponseDTO;
+                return artistMapper.toDTO(updatedArtist);
         }
 
         @Transactional

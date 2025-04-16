@@ -1,6 +1,7 @@
 package com.spotify.spotify_backend.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,12 +18,11 @@ public class AlbumController {
         @Autowired
         private AlbumService albumService;
 
-        @CrossOrigin(origins = "http://localhost:5173")
         @GetMapping("/all")
         public ApiResponse<PageResponseDTO<AlbumResponseDTO>> getAllAlbumsPaginated(
                         @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
                         @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
-                        @RequestParam(value = "sortBy", defaultValue = "title", required = false) String sortBy,
+                        @RequestParam(value = "sortBy", defaultValue = "albumId", required = false) String sortBy,
                         @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir) {
 
                 PageResponseDTO<AlbumResponseDTO> response = albumService.getAllAlbumsPaginated(pageNo, pageSize,
@@ -75,7 +75,7 @@ public class AlbumController {
                 return apiResponse;
         }
 
-        @PostMapping("/create")
+        @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
         public ApiResponse<AlbumResponseDTO> createAlbum(
                         @RequestPart("albumRequestDTO") AlbumRequestDTO albumRequestDTO,
                         @RequestPart("coverImage") MultipartFile coverImage) {
@@ -107,26 +107,14 @@ public class AlbumController {
                 return apiResponse;
         }
 
-        @PutMapping("/cancel/{id}")
-        public ApiResponse<Void> cancelAlbum(@PathVariable Long id) {
-                albumService.cancelAlbum(id);
-                ApiResponse<Void> apiResponse = ApiResponse
-                                .<Void>builder()
+        @PutMapping("/status/{id}")
+        public ApiResponse<AlbumResponseDTO> updateStatus(@PathVariable Long id) {
+                AlbumResponseDTO response = albumService.updateStatus(id);
+                ApiResponse<AlbumResponseDTO> apiResponse = ApiResponse
+                                .<AlbumResponseDTO>builder()
                                 .code(1000)
-                                .message("Hủy album thành công")
-                                .result(null)
-                                .build();
-                return apiResponse;
-        }
-
-        @PutMapping("/restore/{id}")
-        public ApiResponse<Void> restoreAlbum(@PathVariable Long id) {
-                albumService.restoreAlbum(id);
-                ApiResponse<Void> apiResponse = ApiResponse
-                                .<Void>builder()
-                                .code(1000)
-                                .message("Khôi phục album thành công")
-                                .result(null)
+                                .message("Cập nhật trạng thái album thành công")
+                                .result(response)
                                 .build();
                 return apiResponse;
         }

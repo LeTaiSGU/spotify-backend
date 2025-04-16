@@ -17,4 +17,5 @@ public class AlbumResponseDTO {
     private String coverImage;
     private String type;
     private LocalDate createdAt;
+    private Boolean status;
 }

@@ -110,27 +110,14 @@ public class ArtistController {
                 return apiResponse;
         }
 
-        @PutMapping("/cancel/{id}")
-        public ApiResponse<ArtistResponseDTO> cancelArtist(@PathVariable Long id) {
-                ArtistResponseDTO response = artistService.cancelArtist(id);
+        @PutMapping("/status/{id}")
+        public ApiResponse<ArtistResponseDTO> updateArtistStatus(@PathVariable Long id) {
+                ArtistResponseDTO response = artistService.updateArtistStatus(id);
                 // Tạo ApiResponse từ ArtistResponseDTO
                 ApiResponse<ArtistResponseDTO> apiResponse = ApiResponse
                                 .<ArtistResponseDTO>builder()
                                 .code(1000)
-                                .message("Hủy nghệ sĩ thành công")
-                                .result(response)
-                                .build();
-                return apiResponse;
-        }
-
-        @PutMapping("/restore/{id}")
-        public ApiResponse<ArtistResponseDTO> restoreArtist(@PathVariable Long id) {
-                ArtistResponseDTO response = artistService.restoreArtist(id);
-                // Tạo ApiResponse từ ArtistResponseDTO
-                ApiResponse<ArtistResponseDTO> apiResponse = ApiResponse
-                                .<ArtistResponseDTO>builder()
-                                .code(1000)
-                                .message("Khôi phục nghệ sĩ thành công")
+                                .message("Cập nhật trạng thái nghệ sĩ thành công")
                                 .result(response)
                                 .build();
                 return apiResponse;

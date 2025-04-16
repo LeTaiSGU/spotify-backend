@@ -3,46 +3,52 @@ package com.spotify.spotify_backend.mapper;
 import com.spotify.spotify_backend.dto.artist.ArtistRequestDTO;
 import com.spotify.spotify_backend.dto.artist.ArtistResponseDTO;
 import com.spotify.spotify_backend.dto.artist.ArtistUpdateDTO;
+import com.spotify.spotify_backend.dto.artist.SimpleSongDTO;
 import com.spotify.spotify_backend.model.Artist;
+import com.spotify.spotify_backend.model.Song;
+import com.spotify.spotify_backend.repository.SongRepository;
 
 import org.mapstruct.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
-public interface ArtistMapper {
+public abstract class ArtistMapper {
 
-    // Map từ Entity → DTO
-    // @Mapping(target = "songIds", expression =
-    // "java(mapSongsToIds(artist.getSongs()))")
-    // @Mapping(target = "featuredSongIds", expression =
-    // "java(mapSongsToIds(artist.getFeaturedSongs()))")
+    @Autowired
+    protected SongRepository songRepository;
 
-    ArtistResponseDTO toDTO(Artist artist);
+    @Mapping(target = "featuredSongs", source = "featuredSongs", qualifiedByName = "mapFeaturedSongs")
+    public abstract ArtistResponseDTO toDTO(Artist artist);
 
-    // Map từ RequestDTO → Entity khi tạo mới
     @Mapping(target = "artistId", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
-    // @Mapping(target = "songs", ignore = true)
     @Mapping(target = "featuredSongs", ignore = true)
-    Artist toArtist(ArtistRequestDTO dto);
+    public abstract Artist toArtist(ArtistRequestDTO dto);
 
-    // Update từ UpdateDTO → Entity hiện tại
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    // @Mapping(target = "songs", ignore = true)
     @Mapping(target = "featuredSongs", ignore = true)
-    void updateArtistFromDTO(ArtistUpdateDTO dto, @MappingTarget Artist artist);
+    public abstract void updateArtistFromDTO(ArtistUpdateDTO dto, @MappingTarget Artist artist);
 
-    // // Convert Song List → ID List (để trả về client)
-    // default Set<Long> mapSongsToIds(Set<com.spotify.spotify_backend.model.Song>
-    // songs) {
-    // if (songs == null || songs.isEmpty()) {
-    // return Set.of(); // <- Trả về empty set thay vì null
-    // }
-    // return songs.stream()
-    // .map(com.spotify.spotify_backend.model.Song::getSongId)
-    // .collect(Collectors.toSet());
-    // }
+    @AfterMapping
+    protected void enrichWithOwnedSongs(Artist artist, @MappingTarget ArtistResponseDTO dto) {
+        Set<SimpleSongDTO> ownedSongs = songRepository.findByArtist_ArtistIdAndStatus(artist.getArtistId(), true)
+                .stream()
+                .map(song -> new SimpleSongDTO(song.getSongId(), song.getSongName()))
+                .collect(Collectors.toSet());
+        dto.setSongs(ownedSongs); //
 
+    }
+
+    @Named("mapFeaturedSongs")
+    protected static Set<SimpleSongDTO> mapFeaturedSongs(Set<Song> songs) {
+        if (songs == null)
+            return null;
+        return songs.stream()
+                .map(song -> new SimpleSongDTO(song.getSongId(), song.getSongName()))
+                .collect(Collectors.toSet());
+    }
 }
