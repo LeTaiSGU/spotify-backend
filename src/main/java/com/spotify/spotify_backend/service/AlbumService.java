@@ -120,62 +120,67 @@ public class AlbumService {
 
         @Transactional
         public AlbumResponseDTO createAlbum(AlbumRequestDTO albumRequestDTO, MultipartFile coverImage) {
-
+                // Tạo entity từ DTO và lưu tạm vào DB để lấy albumId
                 Album album = albumMapper.toAlbum(albumRequestDTO, artistRepository);
                 Album savedAlbum = albumRepository.save(album);
 
-                // Upload coverImage lên AWS S3
-                CompletableFuture<String> coverImageUrlFuture = CompletableFuture
-                                .supplyAsync(() -> awsS3Service.uploadFile("album_coverImage", coverImage,
-                                                savedAlbum.getAlbumId()));
-
-                try {
-                        // Đợi upload xong
-                        String coverImageUrl = coverImageUrlFuture.get();
-                        // Cập nhật URL vào entity đã lưu
-                        savedAlbum.setCoverImage(coverImageUrl);
-                        // Lưu lại album với URL đã cập nhật
-                        Album updatedAlbum = albumRepository.save(savedAlbum);
-                        // Chuyển đổi Album thành AlbumResponseDTO
-                        AlbumResponseDTO albumResponseDTO = albumMapper.toDTO(updatedAlbum);
-                        return albumResponseDTO;
-
-                } catch (Exception e) {
-                        // Ghi log lỗi nếu cần
-                        throw new RuntimeException("Upload thất bại: " + e.getMessage(), e);
+                // Nếu có ảnh thì xử lý upload
+                if (coverImage != null && !coverImage.isEmpty()) {
+                        try {
+                                // Upload ảnh mới và nhận URL ảnh
+                                String coverImageUrl = awsS3Service.uploadFile("album_coverImage", coverImage,
+                                                savedAlbum.getAlbumId());
+                                savedAlbum.setCoverImage(coverImageUrl + "?t=" + System.currentTimeMillis());
+                                savedAlbum = albumRepository.save(savedAlbum); // Cập nhật ảnh vào DB
+                        } catch (Exception e) {
+                                throw new RuntimeException("❌ Upload ảnh thất bại: " + e.getMessage(), e);
+                        }
                 }
+
+                return albumMapper.toDTO(savedAlbum);
         }
 
         @Transactional
-        public AlbumResponseDTO updateAlbum(AlbumUpdateDTO albumUpdateDTO) {
+        public AlbumResponseDTO updateAlbum(AlbumUpdateDTO albumUpdateDTO, MultipartFile coverImage) {
                 Album album = albumRepository.findById(albumUpdateDTO.getAlbumId())
                                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
+                // Dùng mapper để cập nhật field text
                 albumMapper.updateAlbumFromDTO(albumUpdateDTO, album, artistRepository);
-                // album.setUpdatedAt(LocalDateTime.now());
+
+                // Xử lý ảnh mới (nếu có)
+                if (coverImage != null && !coverImage.isEmpty()) {
+                        String oldCoverImageUrl = album.getCoverImage();
+                        if (oldCoverImageUrl != null && !oldCoverImageUrl.isBlank()) {
+                                try {
+                                        awsS3Service.deleteFile(oldCoverImageUrl);
+                                } catch (Exception e) {
+                                        System.err.println("❌ Xoá ảnh cũ thất bại: " + e.getMessage());
+                                }
+                        }
+
+                        try {
+                                String newCoverImageUrl = awsS3Service.uploadFile("album_coverImage", coverImage,
+                                                album.getAlbumId());
+                                album.setCoverImage(newCoverImageUrl + "?t=" + System.currentTimeMillis());
+                        } catch (Exception e) {
+                                throw new RuntimeException("❌ Upload ảnh mới thất bại: " + e.getMessage(), e);
+                        }
+                }
 
                 Album updatedAlbum = albumRepository.save(album);
-                // Chuyển đổi Album thành AlbumResponseDTO
-                AlbumResponseDTO albumResponseDTO = albumMapper.toDTO(updatedAlbum);
-                return albumResponseDTO;
+                return albumMapper.toDTO(updatedAlbum);
         }
 
         @Transactional
-        public Boolean cancelAlbum(Long id) {
-                if (!albumRepository.existsById(id)) {
-                        throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
-                }
-                albumRepository.updateStatusByAlbumId(id, false);
-                return true;
-        }
-
-        @Transactional
-        public Boolean restoreAlbum(Long id) {
-                if (!albumRepository.existsById(id)) {
-                        throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
-                }
-                albumRepository.updateStatusByAlbumId(id, true);
-                return true;
+        public AlbumResponseDTO updateStatus(Long id) {
+                Album album = albumRepository.findById(id)
+                                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+                // Chuyển đổi trạng thái
+                Boolean newStatus = !album.getStatus();
+                album.setStatus(newStatus);
+                albumRepository.save(album);
+                return albumMapper.toDTO(album);
         }
 
         @Transactional
