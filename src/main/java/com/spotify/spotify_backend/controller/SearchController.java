@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.spotify.spotify_backend.dto.ApiResponse;
-import com.spotify.spotify_backend.dto.searchResponse;
+import com.spotify.spotify_backend.dto.search.searchResponse;
 import com.spotify.spotify_backend.service.SearchService;
 
 import org.springframework.beans.factory.annotation.Autowired;
