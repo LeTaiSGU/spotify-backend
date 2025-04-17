@@ -30,14 +30,7 @@ public class Artist {
         @Column(updatable = false) // Không cho phép cập nhật lại
         private LocalDate createdAt;
 
-        // @LastModifiedDate
-        // private LocalDateTime updatedAt;
-
-        @OneToMany(mappedBy = "artist")
-        private Set<Song> songs; // Danh sách bài hát của nghệ sĩ
-
         @ManyToMany(mappedBy = "featuredArtists")
-        // @JsonManagedReference
         private Set<Song> featuredSongs;
 
         Boolean status; // Trạng thái nghệ sĩ (có thể là true hoặc false)
