@@ -89,7 +89,7 @@ public class SongService {
             // Đợi cả hai upload xong
             String songUrl = songUrlFuture.get();
             String imgUrl = imgUrlFuture.get();
-
+            // add time State
             savedSong.setFileUpload(songUrl + "?t=" + System.currentTimeMillis());
             savedSong.setImg(imgUrl + "?t=" + System.currentTimeMillis());
 
@@ -120,12 +120,13 @@ public class SongService {
 
         if (newSongFile != null && !newSongFile.isEmpty()) {
             String newSongUrl = awsS3Service.uploadFile("song_file", newSongFile, songId);
-            existingSong.setFileUpload(newSongUrl);
+
+            existingSong.setFileUpload(newSongUrl + "?t=" + System.currentTimeMillis());
         }
 
         if (newImgFile != null && !newImgFile.isEmpty()) {
             String newImgUrl = awsS3Service.uploadFile("song_img", newImgFile, songId);
-            existingSong.setImg(newImgUrl);
+            existingSong.setImg(newImgUrl + "?t=" + System.currentTimeMillis());
         }
 
         try {
