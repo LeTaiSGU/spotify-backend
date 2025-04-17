@@ -10,4 +10,5 @@ public class playlistUp {
     private Boolean isPrivate;
     private LocalDateTime updateAt = LocalDateTime.now();
     private String description;
+    private Boolean status;
 }

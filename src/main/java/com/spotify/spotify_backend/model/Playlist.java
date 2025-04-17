@@ -35,7 +35,7 @@ public class Playlist {
     private String name;
     private LocalDateTime createAt;
     private LocalDateTime updateAt;
-    private Boolean isPlaylistLiked;
+    private Boolean status;
     private Boolean isPrivate;
     private String coverImage;
 }

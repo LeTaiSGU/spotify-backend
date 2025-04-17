@@ -19,6 +19,7 @@ public interface SongRepository extends JpaRepository<Song, Long> {
 
     Page<Song> findAllByStatus(Boolean status, Pageable pageable);
 
-    List<Song> findByArtist_ArtistIdAndStatus(Long artistId, Boolean status);
+    List<Song> findByAlbum_AlbumId(Long id);
 
+    List<Song> findByArtist_ArtistIdAndStatus(Long artistId, Boolean status);
 }
