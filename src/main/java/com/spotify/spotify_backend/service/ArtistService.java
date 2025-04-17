@@ -113,16 +113,18 @@ public class ArtistService {
         // Phương thức tạo mới nghệ sĩ
         @Transactional
         public ArtistResponseDTO createArtist(ArtistRequestDTO artistRequestDTO, MultipartFile img) {
+                // Tạo entity từ DTO và lưu vào DB
                 Artist artist = artistMapper.toArtist(artistRequestDTO);
                 Artist savedArtist = artistRepository.save(artist);
 
+                // Nếu có ảnh mới, xử lý upload
                 if (img != null && !img.isEmpty()) {
                         try {
                                 String imgUrl = awsS3Service.uploadFile("artist_img", img, savedArtist.getArtistId());
                                 savedArtist.setImg(imgUrl);
-                                savedArtist = artistRepository.save(savedArtist);
+                                savedArtist = artistRepository.save(savedArtist); // Cập nhật lại với ảnh mới
                         } catch (Exception e) {
-                                throw new RuntimeException("Upload ảnh thất bại: " + e.getMessage(), e);
+                                throw new RuntimeException("❌ Upload ảnh thất bại: " + e.getMessage(), e);
                         }
                 }
 
@@ -132,13 +134,14 @@ public class ArtistService {
         // Phương thức cập nhật nghệ sĩ
         @Transactional
         public ArtistResponseDTO updateArtist(ArtistUpdateDTO artistUpdateDTO, MultipartFile newImg) {
+                // Tìm nghệ sĩ từ ID
                 Artist artist = artistRepository.findById(artistUpdateDTO.getArtistId())
                                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
-                // Cập nhật thông tin text
+                // Cập nhật thông tin khác của nghệ sĩ từ DTO
                 artistMapper.updateArtistFromDTO(artistUpdateDTO, artist);
 
-                // Nếu có ảnh mới
+                // Nếu có ảnh mới, xử lý upload
                 if (newImg != null && !newImg.isEmpty()) {
                         // Xóa ảnh cũ nếu có
                         String oldImgUrl = artist.getImg();
@@ -146,7 +149,8 @@ public class ArtistService {
                                 try {
                                         awsS3Service.deleteFile(oldImgUrl);
                                 } catch (Exception e) {
-                                        System.err.println("Xoá ảnh cũ thất bại: " + e.getMessage());
+                                        // Log lỗi nhưng không throw, tránh gián đoạn quá trình cập nhật
+                                        System.err.println("❌ Xoá ảnh cũ thất bại: " + e.getMessage());
                                 }
                         }
 
@@ -155,10 +159,11 @@ public class ArtistService {
                                 String newImgUrl = awsS3Service.uploadFile("artist_img", newImg, artist.getArtistId());
                                 artist.setImg(newImgUrl);
                         } catch (Exception e) {
-                                throw new RuntimeException("Upload ảnh mới thất bại: " + e.getMessage(), e);
+                                throw new RuntimeException("❌ Upload ảnh mới thất bại: " + e.getMessage(), e);
                         }
                 }
 
+                // Lưu lại nghệ sĩ sau khi cập nhật
                 Artist updatedArtist = artistRepository.save(artist);
                 return artistMapper.toDTO(updatedArtist);
         }

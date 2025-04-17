@@ -68,7 +68,7 @@ public class ArtistController {
         }
 
         @GetMapping("/{id}")
-        public ApiResponse<ArtistResponseDTO> getArtistById(@RequestParam(value = "id") Long id) {
+        public ApiResponse<ArtistResponseDTO> getArtistById(@PathVariable Long id) {
                 ArtistResponseDTO response = artistService.getArtistById(id);
                 // Tạo ApiResponse từ ArtistResponseDTO
                 ApiResponse<ArtistResponseDTO> apiResponse = ApiResponse

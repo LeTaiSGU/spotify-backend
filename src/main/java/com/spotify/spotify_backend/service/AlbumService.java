@@ -124,15 +124,16 @@ public class AlbumService {
                 Album album = albumMapper.toAlbum(albumRequestDTO, artistRepository);
                 Album savedAlbum = albumRepository.save(album);
 
-                // Nếu có ảnh thì mới upload
+                // Nếu có ảnh thì xử lý upload
                 if (coverImage != null && !coverImage.isEmpty()) {
                         try {
+                                // Upload ảnh mới và nhận URL ảnh
                                 String coverImageUrl = awsS3Service.uploadFile("album_coverImage", coverImage,
                                                 savedAlbum.getAlbumId());
-                                savedAlbum.setCoverImage(coverImageUrl);
-                                savedAlbum = albumRepository.save(savedAlbum);
+                                savedAlbum.setCoverImage(coverImageUrl + "?t=" + System.currentTimeMillis());
+                                savedAlbum = albumRepository.save(savedAlbum); // Cập nhật ảnh vào DB
                         } catch (Exception e) {
-                                throw new RuntimeException("Upload ảnh thất bại: " + e.getMessage(), e);
+                                throw new RuntimeException("❌ Upload ảnh thất bại: " + e.getMessage(), e);
                         }
                 }
 
@@ -144,37 +145,29 @@ public class AlbumService {
                 Album album = albumRepository.findById(albumUpdateDTO.getAlbumId())
                                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
-                // Cập nhật thông tin album từ albumUpdateDTO
-                album.setTitle(albumUpdateDTO.getTitle());
-                album.setReleaseDate(albumUpdateDTO.getReleaseDate());
-                album.setType(albumUpdateDTO.getType());
-                // Nếu có ảnh mới
+                // Dùng mapper để cập nhật field text
+                albumMapper.updateAlbumFromDTO(albumUpdateDTO, album, artistRepository);
+
+                // Xử lý ảnh mới (nếu có)
                 if (coverImage != null && !coverImage.isEmpty()) {
-                        // Nếu có ảnh cũ thì xóa khỏi AWS S3
                         String oldCoverImageUrl = album.getCoverImage();
                         if (oldCoverImageUrl != null && !oldCoverImageUrl.isBlank()) {
                                 try {
                                         awsS3Service.deleteFile(oldCoverImageUrl);
                                 } catch (Exception e) {
-                                        // Log lỗi nếu muốn nhưng không throw để tránh chặn flow update
-                                        System.err.println("Xoá ảnh cũ thất bại: " + e.getMessage());
+                                        System.err.println("❌ Xoá ảnh cũ thất bại: " + e.getMessage());
                                 }
                         }
 
-                        // Upload ảnh mới
                         try {
                                 String newCoverImageUrl = awsS3Service.uploadFile("album_coverImage", coverImage,
                                                 album.getAlbumId());
-                                album.setCoverImage(newCoverImageUrl);
+                                album.setCoverImage(newCoverImageUrl + "?t=" + System.currentTimeMillis());
                         } catch (Exception e) {
-                                throw new RuntimeException("Upload ảnh mới thất bại: " + e.getMessage(), e);
+                                throw new RuntimeException("❌ Upload ảnh mới thất bại: " + e.getMessage(), e);
                         }
-                } else {
-                        // Nếu không có ảnh mới thì giữ nguyên ảnh cũ
-                        album.setCoverImage(album.getCoverImage());
                 }
 
-                // Lưu lại album
                 Album updatedAlbum = albumRepository.save(album);
                 return albumMapper.toDTO(updatedAlbum);
         }
