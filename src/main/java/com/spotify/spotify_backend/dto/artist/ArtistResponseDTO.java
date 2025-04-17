@@ -18,6 +18,6 @@ public class ArtistResponseDTO {
     private Boolean status;
     private LocalDate createdAt;
 
-    private Set<Long> songIds;
-    private Set<Long> featuredSongIds;
+    private Set<SimpleSongDTO> songs; // Danh sách bài hát của nghệ sĩ
+    private Set<SimpleSongDTO> featuredSongs;
 }

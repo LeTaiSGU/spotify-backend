@@ -5,19 +5,19 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.time.LocalDate;
+
+import com.spotify.spotify_backend.dto.artist.ArtistResponseDTO;
 
 @Getter
 @Setter
 @Builder
 public class AlbumResponseDTO {
     private Long albumId;
-    private Long artistId;
+    private ArtistResponseDTO artist;
     private String title;
     private LocalDate releaseDate;
-    private String description;
     private String coverImage;
     private String type;
     private LocalDate createdAt;
-    // private LocalDateTime updatedAt;
+    private Boolean status;
 }
