@@ -34,7 +34,8 @@ public class SecurityConfig {
                         "/api/**",
                         "/api/playlists/**",
                         "/api/playlists/update/**",
-                        "/api/songs/**"
+                        "/api/songs/**",
+                        "/api/search"
         };
 
         @Bean
