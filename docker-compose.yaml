@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:14.17-bookworm
+    image: postgres:14.10-alpine
     container_name: spotify-postgres
     environment:
       - POSTGRES_DB=spotify-db
@@ -10,6 +10,8 @@ services:
       - "5431:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    networks:
+      - spotify_network
 
   # redis:
   #   image: redis:latest

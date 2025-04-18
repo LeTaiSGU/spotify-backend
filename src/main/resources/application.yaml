@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${POSTGRES_URL}
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
+    url: jdbc:postgresql://localhost:5431/spotify-db
+    username: spotify
+    password: spotify123
   jpa:
     hibernate:
       ddl-auto: update
@@ -36,3 +36,15 @@ jwt:
 
 google:
   clientId: 474604047510-k2b2ejrdjnvj96p7b565fh80i3sm9o8e.apps.googleusercontent.com
+services:
+  postgres:
+    image: postgres:16
+    container_name: spotify-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_DB: spotify
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
