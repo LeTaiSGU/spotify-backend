@@ -110,7 +110,6 @@ public class SongService {
     }
 
     // Edit Song
-    // Edit Song
     public songResponse updateSong(Long songId, songUpdate songDto, MultipartFile newSongFile,
             MultipartFile newImgFile) {
         Song existingSong = songRepository.findById(songId)
@@ -134,6 +133,15 @@ public class SongService {
             return songMapper.toDto(existingSong);
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi cập nhật bài hát: " + e.getMessage(), e);
+        }
+    }
+
+    // random song
+    public Song getRandomSong(Long excludeId) {
+        if (excludeId != null) {
+            return songRepository.findRandomSongExclude(excludeId);
+        } else {
+            return songRepository.findRandomSong();
         }
     }
 

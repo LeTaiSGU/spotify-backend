@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -65,30 +66,25 @@ public class SongController {
         return apiResponse;
     }
 
-    // // Pagging
-    // @GetMapping("/page")
-    // public ApiResponse<PageResponseDTO<songResponse>> getAllSongsPaged(
-    // @RequestParam(defaultValue = "0") int page,
-    // @RequestParam(defaultValue = "10") int size) {
+    @GetMapping("/random")
+    public ApiResponse<songResponse> getRandomSong(@RequestParam(required = false) Long exclude) {
+        try {
+            Song song = songService.getRandomSong(exclude);
+            songResponse response = songMapper.toDto(song);
 
-    // ApiResponse<PageResponseDTO<songResponse>> apiResponse = new ApiResponse<>();
-    // Page<songResponse> songPage = songService.getAllSongPage(page, size);
-
-    // PageResponseDTO<songResponse> pageResponse =
-    // PageResponseDTO.<songResponse>builder()
-    // .content(songPage.getContent())
-    // .pageNo(songPage.getNumber())
-    // .pageSize(songPage.getSize())
-    // .totalElements(songPage.getTotalElements())
-    // .totalPages(songPage.getTotalPages())
-    // .last(songPage.isLast())
-    // .build();
-
-    // apiResponse.setResult(pageResponse);
-    // apiResponse.setCode(1000);
-    // apiResponse.setMessage("Paged songs with DTO");
-    // return apiResponse;
-    // }
+            return ApiResponse.<songResponse>builder()
+                    .code(1000)
+                    .message("Lấy bài hát ngẫu nhiên thành công")
+                    .result(response)
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.<songResponse>builder()
+                    .code(500)
+                    .message("Lỗi khi lấy bài hát ngẫu nhiên")
+                    .result(null)
+                    .build();
+        }
+    }
 
     // upload song
     @PostMapping("/upload")
