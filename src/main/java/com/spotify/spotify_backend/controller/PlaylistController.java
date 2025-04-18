@@ -3,6 +3,7 @@ package com.spotify.spotify_backend.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,6 +16,8 @@ import com.spotify.spotify_backend.dto.PageResponseDTO;
 import com.spotify.spotify_backend.dto.playlist.playlistDto;
 import com.spotify.spotify_backend.dto.playlist.playlistUp;
 import com.spotify.spotify_backend.dto.playlistsong.showPlaylistSong;
+import com.spotify.spotify_backend.exception.AppException;
+import com.spotify.spotify_backend.exception.ErrorCode;
 import com.spotify.spotify_backend.model.Playlist;
 import com.spotify.spotify_backend.service.PlaylistService;
 import com.spotify.spotify_backend.service.PlaylistSongService;
@@ -120,10 +123,22 @@ public class PlaylistController {
             @RequestParam("playlist") Long playlistId,
             @RequestParam("song") Long songId) {
         ApiResponse<showPlaylistSong> apiResponse = new ApiResponse<>();
-        playlistSongService.addSongToPlaylist(playlistId, songId);
-        showPlaylistSong show = playlistSongService.getPlaylistSongsByPlaylistId(playlistId);
-        apiResponse.setResult(show);
-        apiResponse.setMessage("Song added to playlist successfully");
+        try {
+            playlistSongService.addSongToPlaylist(playlistId, songId);
+            showPlaylistSong show = playlistSongService.getPlaylistSongsByPlaylistId(playlistId);
+            apiResponse.setResult(show);
+            apiResponse.setMessage("Song added to playlist successfully");
+            apiResponse.setCode(200);
+        } catch (AppException e) {
+            apiResponse.setCode(e.getErrorCode().getCode());
+            apiResponse.setMessage(e.getErrorCode().getMessage());
+        } catch (DataIntegrityViolationException e) {
+            apiResponse.setCode(ErrorCode.VALIDATION_ERROR.getCode());
+            apiResponse.setMessage("Duplicate entry: " + e.getMessage());
+        } catch (Exception e) {
+            apiResponse.setCode(ErrorCode.UNCATEGORIZED.getCode());
+            apiResponse.setMessage("Unexpected error: " + e.getMessage());
+        }
         return apiResponse;
     }
 
