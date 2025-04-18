@@ -24,5 +24,5 @@ public class songResponse {
     private Boolean status;
     private String img;
     private String description;
-    private Set<Long> artists_id;
+    private Set<simpleArtistDto> artist_feature;
 }

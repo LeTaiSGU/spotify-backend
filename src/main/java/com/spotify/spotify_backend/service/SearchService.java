@@ -1,7 +1,6 @@
 package com.spotify.spotify_backend.service;
 
 import java.util.stream.Collectors;
-
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +13,6 @@ import com.spotify.spotify_backend.dto.search.searchResponse;
 import com.spotify.spotify_backend.dto.song.songResponse;
 import com.spotify.spotify_backend.mapper.AlbumMapper;
 import com.spotify.spotify_backend.mapper.SongMapper;
-// import com.spotify.spotify_backend.model.Playlist;
 import com.spotify.spotify_backend.model.PlaylistSong;
 import com.spotify.spotify_backend.repository.AlbumRepository;
 import com.spotify.spotify_backend.repository.PlaylistRepository;
@@ -27,33 +25,39 @@ public class SearchService {
         private SongRepository songRepository;
 
         @Autowired
-        SongMapper songMapper;
+        private SongMapper songMapper;
 
         @Autowired
-        private AlbumMapper albumMapper; // Thiếu injection này
+        private AlbumMapper albumMapper;
 
         @Autowired
-        PlaylistRepository playlistRepository;
+        private PlaylistRepository playlistRepository;
 
         @Autowired
-        AlbumRepository albumRepository;
+        private AlbumRepository albumRepository;
 
         public searchResponse searchKeyWord(String keyWord) {
+                // Normalize keyword to lowercase for case-insensitive search
+                String normalizedKeyWord = keyWord != null ? keyWord.toLowerCase() : "";
+
+                // Search songs
                 List<songResponse> songs = songRepository.findAll()
                                 .stream()
                                 .filter(song -> song.getSongName() != null
-                                                && song.getSongName().toLowerCase().contains(keyWord.toLowerCase()))
+                                                && song.getSongName().toLowerCase().contains(normalizedKeyWord))
                                 .sorted((s1, s2) -> s2.getCreatedAt().compareTo(s1.getCreatedAt()))
                                 .limit(4)
                                 .map(songMapper::toDto)
                                 .collect(Collectors.toList());
 
+                // Search playlists
                 List<showPlaylistSong> playlists = playlistRepository.findAll()
                                 .stream()
                                 .filter(playlist -> playlist.getName() != null
-                                                && playlist.getName().toLowerCase().contains(keyWord.toLowerCase())
-                                                && !playlist.getIsPrivate()) // Add this condition to filter out private
-                                                                             // playlists
+                                                && playlist.getName().toLowerCase().contains(normalizedKeyWord)
+                                                && !playlist.getIsPrivate() && playlist.getStatus())
+                                // Add this condition to filter out private
+                                // playlists
                                 .sorted((p1, p2) -> p2.getCreateAt().compareTo(p1.getCreateAt()))
                                 .limit(4)
                                 .map(playlist -> showPlaylistSong.builder()
@@ -67,14 +71,16 @@ public class SearchService {
                                                 .build())
                                 .collect(Collectors.toList());
 
+                // Search albums
                 List<AlbumSearchDTO> albums = albumRepository.findAll()
                                 .stream()
-                                .filter(album -> album.getTitle() != null
-                                                && album.getTitle().toLowerCase().contains(keyWord.toLowerCase()))
+                                .filter(album -> {
+                                        String title = album.getTitle() != null ? album.getTitle().toLowerCase() : "";
+                                        return title.contains(normalizedKeyWord);
+                                })
                                 .sorted((a1, a2) -> a2.getReleaseDate().compareTo(a1.getReleaseDate()))
                                 .limit(4)
                                 .map(album -> {
-                                        // Map the artist to artistDto
                                         artistDto mappedArtist = artistDto.builder()
                                                         .artistId(album.getArtist().getArtistId())
                                                         .name(album.getArtist().getName())
@@ -84,7 +90,6 @@ public class SearchService {
                                                         .createdAt(album.getArtist().getCreatedAt())
                                                         .build();
 
-                                        // Map the album to albumDto with the mapped artist
                                         albumDto mappedAlbum = albumDto.builder()
                                                         .albumId(album.getAlbumId())
                                                         .title(album.getTitle())
@@ -96,7 +101,6 @@ public class SearchService {
                                                         .status(album.getStatus())
                                                         .build();
 
-                                        // Get and map all songs belonging to this album
                                         List<songResponse> albumSongs = songRepository.findAll()
                                                         .stream()
                                                         .filter(song -> song.getAlbum() != null
@@ -105,7 +109,6 @@ public class SearchService {
                                                         .map(songMapper::toDto)
                                                         .collect(Collectors.toList());
 
-                                        // Build the final AlbumSearchDTO
                                         return AlbumSearchDTO.builder()
                                                         .album(mappedAlbum)
                                                         .songs(albumSongs)
@@ -119,5 +122,4 @@ public class SearchService {
                                 .albumResult(albums)
                                 .build();
         }
-
 }
