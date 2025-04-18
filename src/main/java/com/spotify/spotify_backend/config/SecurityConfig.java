@@ -37,6 +37,7 @@ public class SecurityConfig {
                         // ,
                         "/api/playlists/update/**",
                         "/api/songs/**",
+                        "api/songs",
                         "/api/search"
         };
 
