@@ -29,14 +29,16 @@ public class SecurityConfig {
                         "/api/auth/google",
                         "/",
                         "/api/search",
-                        "/api/playlists/**"
+                        "/api/playlists/**",
+
         };
 
         private static final String[] USER_ENDPOINTS = {
                         "/api/**",
                         "/api/playlists/update/**",
                         "/api/songs/**",
-                        "/api/search"
+                        "/api/search",
+                        "/api/user",
         };
 
         @Bean
