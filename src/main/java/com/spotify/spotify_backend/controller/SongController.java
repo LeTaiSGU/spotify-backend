@@ -11,6 +11,7 @@ import com.spotify.spotify_backend.service.SongService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -93,6 +94,26 @@ public class SongController {
                 ApiResponse<songResponse> apiResponse = new ApiResponse<>();
                 apiResponse.setResult(response);
                 return apiResponse;
+        }
+
+        @GetMapping("/random")
+        public ApiResponse<songResponse> getRandomSong(@RequestParam(required = false) Long exclude) {
+                try {
+                        Song song = songService.getRandomSong(exclude);
+                        songResponse response = songMapper.toDto(song);
+
+                        return ApiResponse.<songResponse>builder()
+                                        .code(1000)
+                                        .message("Lấy bài hát ngẫu nhiên thành công")
+                                        .result(response)
+                                        .build();
+                } catch (Exception e) {
+                        return ApiResponse.<songResponse>builder()
+                                        .code(500)
+                                        .message("Lỗi khi lấy bài hát ngẫu nhiên")
+                                        .result(null)
+                                        .build();
+                }
         }
 
         // upload song

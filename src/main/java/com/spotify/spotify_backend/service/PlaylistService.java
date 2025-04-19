@@ -91,7 +91,7 @@ public class PlaylistService {
     }
 
     public List<Playlist> getPlaylistsByUserId(Long userId) {
-        return playlistRepository.findByUser_UserId(userId);
+        return playlistRepository.findByUser_UserIdAndStatusTrue(userId);
     }
 
     public Playlist getPlaylistById(Long id) {
@@ -131,19 +131,13 @@ public class PlaylistService {
 
     // Xóa playlist
     @Transactional
-    public String deletePlaylist(Long playlistId) {
+    public Playlist deletePlaylist(Long playlistId) {
         Playlist playlist = playlistRepository.findById(playlistId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy playlist với ID: " + playlistId));
-
+        playlist.setStatus(false);
         // Xóa avatar từ S3 trước
-        if (!"/src/assets/default.png".equals(playlist.getCoverImage())) {
-            String key = extractS3KeyFromUrl(playlist.getCoverImage());
-            awsS3Service.deleteFile(key);
-        }
 
-        String deletedName = playlist.getName();
-        playlistRepository.delete(playlist);
-        return deletedName;
+        return playlist;
     }
 
     private String extractS3KeyFromUrl(String url) {

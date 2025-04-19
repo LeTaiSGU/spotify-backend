@@ -123,7 +123,7 @@ public class SongService {
             // Đợi cả hai upload xong
             String songUrl = songUrlFuture.get();
             String imgUrl = imgUrlFuture.get();
-
+            // add time State
             savedSong.setFileUpload(songUrl + "?t=" + System.currentTimeMillis());
             savedSong.setImg(imgUrl + "?t=" + System.currentTimeMillis());
 
@@ -167,6 +167,15 @@ public class SongService {
             return songMapper.toDto(existingSong);
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi cập nhật bài hát: " + e.getMessage(), e);
+        }
+    }
+
+    // random song
+    public Song getRandomSong(Long excludeId) {
+        if (excludeId != null) {
+            return songRepository.findRandomSongExclude(excludeId);
+        } else {
+            return songRepository.findRandomSong();
         }
     }
 

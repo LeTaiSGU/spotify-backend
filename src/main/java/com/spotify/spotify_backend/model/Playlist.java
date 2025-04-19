@@ -33,7 +33,6 @@ public class Playlist {
 
     private String description;
     private LocalDateTime createAt;
-    // private Boolean isPlaylistLiked;
     private Boolean isPrivate;
     private String coverImage;
     private Boolean status;

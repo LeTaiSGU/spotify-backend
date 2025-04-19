@@ -167,10 +167,10 @@ public class PlaylistController {
         return apiResponse;
     }
 
-    @PutMapping("delete/{id}")
-    public ApiResponse<String> deletePlaylist(@PathVariable Long id) {
-        ApiResponse<String> apiResponse = new ApiResponse<>();
-        String result = playlistService.deletePlaylist(id);
+    @PutMapping("disable/{id}")
+    public ApiResponse<Playlist> deletePlaylist(@PathVariable Long id) {
+        ApiResponse<Playlist> apiResponse = new ApiResponse<>();
+        Playlist result = playlistService.deletePlaylist(id);
         apiResponse.setResult(result);
         apiResponse.setMessage("Delete successful!");
         return apiResponse;

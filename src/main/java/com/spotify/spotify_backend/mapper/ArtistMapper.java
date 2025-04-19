@@ -4,6 +4,7 @@ import com.spotify.spotify_backend.dto.artist.ArtistRequestDTO;
 import com.spotify.spotify_backend.dto.artist.ArtistResponseDTO;
 import com.spotify.spotify_backend.dto.artist.ArtistUpdateDTO;
 import com.spotify.spotify_backend.dto.artist.SimpleSongDTO;
+import com.spotify.spotify_backend.dto.search.artistDto;
 import com.spotify.spotify_backend.model.Artist;
 import com.spotify.spotify_backend.model.Song;
 import com.spotify.spotify_backend.repository.SongRepository;
