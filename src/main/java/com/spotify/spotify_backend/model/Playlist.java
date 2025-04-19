@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Getter
@@ -22,6 +21,7 @@ public class Playlist {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long playlistId;
+    private String name;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -32,10 +32,9 @@ public class Playlist {
     private List<PlaylistSong> playlistSongs;
 
     private String description;
-    private String name;
     private LocalDateTime createAt;
-    private LocalDateTime updateAt;
-    private Boolean isPlaylistLiked;
+    // private Boolean isPlaylistLiked;
     private Boolean isPrivate;
     private String coverImage;
+    private Boolean status;
 }

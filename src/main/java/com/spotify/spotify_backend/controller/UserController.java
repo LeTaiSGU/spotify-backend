@@ -26,6 +26,11 @@ public class UserController {
         return userService.getAllUsers();
     }
 
+    @GetMapping("/user/status")
+    public List<Users> userStatus(@RequestPart("status") Boolean status) {
+        return userService.getAllUsersByStatus(status);
+    }
+
     @GetMapping("/user/{userId}")
     public Users getUser(@PathVariable("userId") Long userId) {
         return userService.getUserById(userId);

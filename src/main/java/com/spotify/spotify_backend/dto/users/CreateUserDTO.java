@@ -26,4 +26,6 @@ public class CreateUserDTO {
     private LocalDate dob;
 
     private boolean isPremium = false;
+
+    private Boolean status = true; // true: active, false: inactive
 }

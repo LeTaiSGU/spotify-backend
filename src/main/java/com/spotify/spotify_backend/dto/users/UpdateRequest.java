@@ -12,8 +12,9 @@ import java.time.LocalDate;
 public class UpdateRequest {
     @Email
     String email;
-    @Size(min = 8,message = "Password has a least 8 character")
+    @Size(min = 8, message = "Password has a least 8 character")
     String password;
     LocalDate dob;
     boolean isPremium;
+    Boolean status = true;
 }

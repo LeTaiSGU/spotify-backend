@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 import java.time.LocalDate;
 
 @Service
@@ -37,15 +38,40 @@ public class SongService {
     @Autowired
     private AmazonService awsS3Service;
 
+    private <T> PageResponseDTO<T> createPageDTO(Page<?> page, List<T> content) {
+        return PageResponseDTO.<T>builder()
+                .content(content)
+                .pageNo(page.getNumber())
+                .pageSize(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .last(page.isLast())
+                .build();
+    }
+
     public List<Song> getAllSongs() {
 
         return songRepository.findAll();
     }
 
-    public Page<songResponse> getAllSongPage(int pageNo, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("songId").ascending());
-        Page<Song> songPage = songRepository.findAll(pageable);
-        return songPage.map(songMapper::toDto);
+    public PageResponseDTO<songResponse> getAllSongPage(int pageNo, int pageSize,
+            String sortBy,
+            String sortDir, Boolean status) {
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+        Page<Song> songPage;
+        if (status != null) {
+            songPage = songRepository.findAllByStatus(status, pageable);
+        } else {
+            songPage = songRepository.findAll(pageable);
+        }
+        List<songResponse> content = songPage.getContent().stream()
+                .map(songMapper::toDto)
+                .collect(Collectors.toList());
+
+        PageResponseDTO<songResponse> pageResponseDTO = createPageDTO(songPage, content);
+        return pageResponseDTO;
     }
 
     // all by status
@@ -67,15 +93,23 @@ public class SongService {
                 .build();
     }
 
+    // Get song by ID
+    public songResponse getSongById(Long songId) {
+        Song song = songRepository.findById(songId)
+                .orElseThrow(() -> new AppException(ErrorCode.SONG_NOT_FOUND));
+
+        return songMapper.toDto(song);
+    }
+
     public Song uploadSong(songdto songDto, MultipartFile songFile, MultipartFile imgFile) {
         // Kiểm tra trùng tên bài hát
-        if (songRepository.existsBySongName(songDto.getSongName())) {
-            throw new IllegalArgumentException("Tên bài hát đã tồn tại!");
-        }
+        // if (songRepository.existsBySongName(songDto.getSongName())) {
+        // throw new IllegalArgumentException("Tên bài hát đã tồn tại!");
+        // }
 
         Song song = songMapper.toSong(songDto, songMappingHelper);
         song.setCreatedAt(LocalDate.now());
-
+        System.out.println(song);
         Song savedSong = songRepository.save(song);
 
         // Upload songFile và imgFile song song
@@ -111,20 +145,20 @@ public class SongService {
 
     // Edit Song
     // Edit Song
-    public songResponse updateSong(Long songId, songUpdate songDto, MultipartFile newSongFile,
+    public songResponse updateSong(songUpdate songDto, MultipartFile newSongFile,
             MultipartFile newImgFile) {
-        Song existingSong = songRepository.findById(songId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài hát với ID: " + songId));
+        Song existingSong = songRepository.findById(songDto.getSongId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài hát với ID: " + songDto.getSongId()));
 
         songMapper.updateSongFromDto(songDto, existingSong, songMappingHelper);
 
         if (newSongFile != null && !newSongFile.isEmpty()) {
-            String newSongUrl = awsS3Service.uploadFile("song_file", newSongFile, songId);
+            String newSongUrl = awsS3Service.uploadFile("song_file", newSongFile, songDto.getSongId());
             existingSong.setFileUpload(newSongUrl);
         }
 
         if (newImgFile != null && !newImgFile.isEmpty()) {
-            String newImgUrl = awsS3Service.uploadFile("song_img", newImgFile, songId);
+            String newImgUrl = awsS3Service.uploadFile("song_img", newImgFile, songDto.getSongId());
             existingSong.setImg(newImgUrl);
         }
 

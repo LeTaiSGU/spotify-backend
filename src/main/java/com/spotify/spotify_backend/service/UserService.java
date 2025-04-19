@@ -25,6 +25,10 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    public List<Users> getAllUsersByStatus(Boolean status) {
+        return userRepository.findAllByStatus(status);
+    }
+
     public Users getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
