@@ -12,8 +12,8 @@ import java.util.Set;
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class songdto {
     String songName;
-    Long artistId;
-    Long albumId;
+    Long artist_id;
+    Long album_id;
     Long duration;
     boolean status = true;
     Set<Long> featuredArtistIds;
