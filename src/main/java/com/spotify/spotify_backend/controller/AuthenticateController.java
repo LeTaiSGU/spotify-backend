@@ -3,7 +3,7 @@ package com.spotify.spotify_backend.controller;
 import com.spotify.spotify_backend.dto.users.CreateUserDTO;
 import com.spotify.spotify_backend.dto.users.GoogleAuthRequest;
 import com.spotify.spotify_backend.dto.users.LoginRequest;
-import com.spotify.spotify_backend.model.Users;
+// import com.spotify.spotify_backend.model.Users;
 import com.spotify.spotify_backend.service.AuthenticateService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;

@@ -3,6 +3,7 @@ package com.spotify.spotify_backend.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,8 @@ import com.spotify.spotify_backend.dto.playlist.playlistResponse;
 import com.spotify.spotify_backend.dto.playlist.playlistUp;
 import com.spotify.spotify_backend.dto.playlist.PlaylistUpdateAdminDTO;
 import com.spotify.spotify_backend.dto.playlistsong.showPlaylistSong;
+import com.spotify.spotify_backend.exception.AppException;
+import com.spotify.spotify_backend.exception.ErrorCode;
 import com.spotify.spotify_backend.model.Playlist;
 import com.spotify.spotify_backend.service.PlaylistService;
 import com.spotify.spotify_backend.service.PlaylistSongService;
@@ -161,10 +164,22 @@ public class PlaylistController {
             @RequestParam("playlist") Long playlistId,
             @RequestParam("song") Long songId) {
         ApiResponse<showPlaylistSong> apiResponse = new ApiResponse<>();
-        playlistSongService.addSongToPlaylist(playlistId, songId);
-        showPlaylistSong show = playlistSongService.getPlaylistSongsByPlaylistId(playlistId);
-        apiResponse.setResult(show);
-        apiResponse.setMessage("Song added to playlist successfully");
+        try {
+            playlistSongService.addSongToPlaylist(playlistId, songId);
+            showPlaylistSong show = playlistSongService.getPlaylistSongsByPlaylistId(playlistId);
+            apiResponse.setResult(show);
+            apiResponse.setMessage("Song added to playlist successfully");
+            apiResponse.setCode(200);
+        } catch (AppException e) {
+            apiResponse.setCode(e.getErrorCode().getCode());
+            apiResponse.setMessage(e.getErrorCode().getMessage());
+        } catch (DataIntegrityViolationException e) {
+            apiResponse.setCode(ErrorCode.VALIDATION_ERROR.getCode());
+            apiResponse.setMessage("Duplicate entry: " + e.getMessage());
+        } catch (Exception e) {
+            apiResponse.setCode(ErrorCode.UNCATEGORIZED.getCode());
+            apiResponse.setMessage("Unexpected error: " + e.getMessage());
+        }
         return apiResponse;
     }
 
@@ -181,12 +196,24 @@ public class PlaylistController {
         return apiResponse;
     }
 
+    // disable playlist
     @PutMapping("disable/{id}")
     public ApiResponse<Playlist> deletePlaylist(@PathVariable Long id) {
         ApiResponse<Playlist> apiResponse = new ApiResponse<>();
         Playlist result = playlistService.deletePlaylist(id);
         apiResponse.setResult(result);
         apiResponse.setMessage("Delete successful!");
+        return apiResponse;
+    }
+
+    // change private to playlist
+    @PutMapping("private/{id}")
+    public ApiResponse<Playlist> changePrivateStatus(@PathVariable Long id) {
+        Playlist changePlaylist = playlistService.changePrivate(id);
+        ApiResponse<Playlist> apiResponse = new ApiResponse<Playlist>();
+        apiResponse.setCode(1000);
+        apiResponse.setMessage("Playlist change status private succesfully");
+        apiResponse.setResult(changePlaylist);
         return apiResponse;
     }
 }
