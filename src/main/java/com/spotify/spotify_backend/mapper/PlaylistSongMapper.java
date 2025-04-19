@@ -55,7 +55,6 @@ public interface PlaylistSongMapper {
                                         response.setCreatedAt(ps.getSong().getCreatedAt());
                                         response.setStatus(ps.getSong().getStatus());
                                         response.setImg(ps.getSong().getImg());
-                                        response.setDescription(ps.getSong().getDescription());
                                         return response;
                                 })
                                 .collect(Collectors.toList());
