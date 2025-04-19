@@ -29,7 +29,6 @@ public class SecurityConfig {
                         "/api/auth/google",
                         "/",
                         "/api/search",
-                        "/api/playlists/**",
 
         };
 
@@ -39,6 +38,8 @@ public class SecurityConfig {
                         "/api/songs/**",
                         "/api/search",
                         "/api/user",
+                        "/api/playlists/**",
+                        "/api/playlists/private/**",
         };
 
         @Bean

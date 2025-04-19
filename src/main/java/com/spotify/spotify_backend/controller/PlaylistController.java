@@ -182,12 +182,24 @@ public class PlaylistController {
         return apiResponse;
     }
 
+    // disable playlist
     @PutMapping("disable/{id}")
     public ApiResponse<Playlist> deletePlaylist(@PathVariable Long id) {
         ApiResponse<Playlist> apiResponse = new ApiResponse<>();
         Playlist result = playlistService.deletePlaylist(id);
         apiResponse.setResult(result);
         apiResponse.setMessage("Delete successful!");
+        return apiResponse;
+    }
+
+    // change private to playlist
+    @PutMapping("private/{id}")
+    public ApiResponse<Playlist> changePrivateStatus(@PathVariable Long id) {
+        Playlist changePlaylist = playlistService.changePrivate(id);
+        ApiResponse<Playlist> apiResponse = new ApiResponse<Playlist>();
+        apiResponse.setCode(1000);
+        apiResponse.setMessage("Playlist change status private succesfully");
+        apiResponse.setResult(changePlaylist);
         return apiResponse;
     }
 }

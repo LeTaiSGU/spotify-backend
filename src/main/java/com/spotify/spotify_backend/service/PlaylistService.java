@@ -144,4 +144,13 @@ public class PlaylistService {
         return url.substring(url.indexOf("playlist_img/"));
     }
 
+    //
+    @Transactional
+    public Playlist changePrivate(Long playlistId) {
+        Playlist playlist = playlistRepository.findById(playlistId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy playlist với ID: " + playlistId));
+        playlist.setIsPrivate(!playlist.getIsPrivate());
+        return playlist;
+    }
+
 }
