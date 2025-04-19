@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -53,10 +54,10 @@ public class PlaylistController {
     // Get by page
     @GetMapping("/page")
     public ApiResponse<PageResponseDTO<Playlist>> getAllPlaylistsPaged(
-            @RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam(defaultValue = "playlistId") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
+            @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = "name", required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir) {
 
         Page<Playlist> page = playlistService.getAllPlaylistsPaged(pageNo, pageSize, sortBy, sortDir);
 
@@ -74,6 +75,16 @@ public class PlaylistController {
                 .message("Lấy danh sách playlist thành công")
                 .result(response)
                 .build();
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<Playlist> getPlaylistById(@PathVariable Long id) {
+        ApiResponse<Playlist> apiResponse = new ApiResponse<>();
+        Playlist playlist = playlistService.getPlaylistById(id);
+        apiResponse.setResult(playlist);
+        apiResponse.setCode(1000);
+        apiResponse.setMessage("Playlist with id: " + id);
+        return apiResponse;
     }
 
     @PostMapping("/create")
@@ -114,6 +125,22 @@ public class PlaylistController {
         showPlaylistSong show = playlistSongService.getPlaylistSongsByPlaylistId(playlistId);
         apiResponse.setResult(show);
         apiResponse.setMessage("Song of playlist");
+        return apiResponse;
+    }
+
+    @PostMapping(value = "/adminCreate", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+
+    public ApiResponse<Playlist> createPlaylistAdmin(
+            @RequestPart("playlistDto") playlistDto newPlaylist,
+            @RequestPart("coverImage") MultipartFile coverImage,
+            @RequestPart(value = "playlistSongIds", required = false) List<Long> playlistSongIds) {
+        ApiResponse<Playlist> apiResponse = new ApiResponse<>();
+        Playlist playlist = playlistService.createPlaylistAdmin(newPlaylist,
+                coverImage, playlistSongIds);
+
+        apiResponse.setMessage("Playlist created successfully");
+        apiResponse.setResult(playlist);
+        apiResponse.setCode(1000);
         return apiResponse;
     }
 

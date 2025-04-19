@@ -6,9 +6,6 @@ import lombok.*;
 import java.time.LocalDate;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 @Getter
 @Setter
 @Builder
@@ -29,7 +26,7 @@ public class Song {
     private long duration;
 
     @ManyToOne
-    @JoinColumn(name = "artist_id", nullable = false)
+    @JoinColumn(name = "artist_id", nullable = true)
     private Artist artist;
 
     @ManyToMany
@@ -38,7 +35,6 @@ public class Song {
 
     private String img;
     private String fileUpload;
-    private String description;
 
     private LocalDate createdAt;
     private Boolean status;

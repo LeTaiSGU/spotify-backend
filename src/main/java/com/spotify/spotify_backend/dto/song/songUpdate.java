@@ -11,10 +11,10 @@ import java.util.Set;
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class songUpdate {
+    Long songId;
     String songName;
-    Long artist_id;
-    Long album_id;
+    Long artistId;
+    Long albumId;
     Long duration;
-    String description;
     Set<Long> featuredArtistIds;
 }

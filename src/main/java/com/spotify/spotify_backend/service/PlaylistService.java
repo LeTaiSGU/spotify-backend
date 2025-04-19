@@ -19,6 +19,7 @@ import com.spotify.spotify_backend.exception.ErrorCode;
 import com.spotify.spotify_backend.mapper.PlaylistMapper;
 import com.spotify.spotify_backend.model.Playlist;
 import com.spotify.spotify_backend.repository.PlaylistRepository;
+import com.spotify.spotify_backend.repository.SongRepository;
 import com.spotify.spotify_backend.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
@@ -33,10 +34,16 @@ public class PlaylistService {
     private PlaylistRepository playlistRepository;
 
     @Autowired
+    private SongRepository songRepository;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private PlaylistMapper playlistMapper;
+
+    @Autowired
+    private PlaylistSongService playlistSongService;
 
     public List<Playlist> getAllPlaylists() {
         return playlistRepository.findAll();
@@ -58,8 +65,38 @@ public class PlaylistService {
         return playlistRepository.save(playlist);
     }
 
+    @Transactional
+    public Playlist createPlaylistAdmin(playlistDto dto, MultipartFile coverImage, List<Long> playlistSongIds) {
+        Playlist playlist = playlistMapper.toPlaylist(dto, userRepository);
+        Playlist savedPlaylist = playlistRepository.save(playlist);
+        // Upload ảnh đại diện
+        if (coverImage != null && !coverImage.isEmpty()) {
+            try {
+                String imgUrl = awsS3Service.uploadFile("playlist_img", coverImage, savedPlaylist.getPlaylistId());
+                savedPlaylist.setCoverImage(imgUrl);
+                savedPlaylist = playlistRepository.save(savedPlaylist); // Cập nhật lại với ảnh mới
+            } catch (Exception e) {
+                throw new RuntimeException("❌ Upload ảnh thất bại: " + e.getMessage(), e);
+            }
+        }
+        // Lưu các bài hát vào playlist
+        if (playlistSongIds != null) {
+            for (Long songId : playlistSongIds) {
+                playlistSongService.addSongToPlaylist(savedPlaylist.getPlaylistId(), songId);
+            }
+        }
+
+        return savedPlaylist;
+
+    }
+
     public List<Playlist> getPlaylistsByUserId(Long userId) {
         return playlistRepository.findByUser_UserIdAndStatusTrue(userId);
+    }
+
+    public Playlist getPlaylistById(Long id) {
+        return playlistRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PLAYLIST_NOT_FOUND));
     }
 
     public Playlist editPlaylist(playlistUp playlistUp, MultipartFile avatar, Long id) {

@@ -15,6 +15,7 @@ import lombok.Setter;
 public class songResponse {
     private Long songId;
     private Long albumId;
+    private String title;
     private Long artistId;
     private String artistName;
     private String songName;
@@ -24,5 +25,5 @@ public class songResponse {
     private Boolean status;
     private String img;
     private String description;
-    private Set<simpleArtistDto> artist_feature;
+    private Set<simpleArtistDto> featuredArtists;
 }
