@@ -129,7 +129,7 @@ public class SongController {
                 return apiResponse;
         }
 
-        @PutMapping(value = "/update")
+        @PutMapping("/update")
         public ApiResponse<songResponse> editSong(
                         @RequestPart("song") songUpdate song,
                         @RequestPart(value = "songFile", required = false) MultipartFile songFile,

@@ -29,12 +29,10 @@ public class SecurityConfig {
                         "/api/auth/google",
                         "/",
                         "/api/search",
-                        "/api/playlists/**"
         };
 
         private static final String[] USER_ENDPOINTS = {
                         "/api/**",
-                        // ,
                         "/api/playlists/update/**",
                         "/api/songs/**",
                         "api/songs",

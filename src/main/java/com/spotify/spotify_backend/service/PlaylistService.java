@@ -12,12 +12,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.spotify.spotify_backend.dto.playlist.playlistAdminDTO;
 import com.spotify.spotify_backend.dto.playlist.playlistDto;
+import com.spotify.spotify_backend.dto.playlist.playlistResponse;
 import com.spotify.spotify_backend.dto.playlist.playlistUp;
+import com.spotify.spotify_backend.dto.playlist.PlaylistUpdateAdminDTO;
 import com.spotify.spotify_backend.exception.AppException;
 import com.spotify.spotify_backend.exception.ErrorCode;
 import com.spotify.spotify_backend.mapper.PlaylistMapper;
+import com.spotify.spotify_backend.mapper.PlaylistMappingHelper;
 import com.spotify.spotify_backend.model.Playlist;
+import com.spotify.spotify_backend.repository.PlayListSongRepo;
 import com.spotify.spotify_backend.repository.PlaylistRepository;
 import com.spotify.spotify_backend.repository.SongRepository;
 import com.spotify.spotify_backend.repository.UserRepository;
@@ -37,6 +42,12 @@ public class PlaylistService {
     private SongRepository songRepository;
 
     @Autowired
+    private PlayListSongRepo playListSongRepo;
+
+    @Autowired
+    private PlaylistMappingHelper playlistMappingHelper;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -49,10 +60,17 @@ public class PlaylistService {
         return playlistRepository.findAll();
     }
 
-    public Page<Playlist> getAllPlaylistsPaged(int pageNo, int pageSize, String sortBy, String sortDir) {
+    public Page<Playlist> getAllPlaylistsPaged(int pageNo, int pageSize, String sortBy, String sortDir,
+            Boolean status) {
         Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-        return playlistRepository.findAll(pageable);
+        Page<Playlist> playlistPage;
+        if (status == null) {
+            playlistPage = playlistRepository.findAll(pageable);
+        } else {
+            playlistPage = playlistRepository.findAllByStatus(pageable, status);
+        }
+        return playlistPage;
     }
 
     public Page<Playlist> getAllPlaylistsPage(int pageNo, int pageSize) {
@@ -66,8 +84,9 @@ public class PlaylistService {
     }
 
     @Transactional
-    public Playlist createPlaylistAdmin(playlistDto dto, MultipartFile coverImage, List<Long> playlistSongIds) {
-        Playlist playlist = playlistMapper.toPlaylist(dto, userRepository);
+    public Playlist createPlaylistAdmin(playlistAdminDTO dto, MultipartFile coverImage) {
+        List<Long> playListSongIds = dto.getPlaylistSongIds();
+        Playlist playlist = playlistMapper.toPlaylistAdmin(dto, userRepository);
         Playlist savedPlaylist = playlistRepository.save(playlist);
         // Upload ảnh đại diện
         if (coverImage != null && !coverImage.isEmpty()) {
@@ -80,14 +99,37 @@ public class PlaylistService {
             }
         }
         // Lưu các bài hát vào playlist
-        if (playlistSongIds != null) {
-            for (Long songId : playlistSongIds) {
+        if (playListSongIds != null) {
+            for (Long songId : playListSongIds) {
                 playlistSongService.addSongToPlaylist(savedPlaylist.getPlaylistId(), songId);
             }
         }
 
         return savedPlaylist;
 
+    }
+
+    @Transactional
+    public Playlist updatePlaylistAdmin(PlaylistUpdateAdminDTO dto, MultipartFile coverImage) {
+        Playlist playlist = playlistRepository.findById(dto.getPlaylistId())
+                .orElseThrow(() -> new AppException(ErrorCode.PLAYLIST_NOT_FOUND));
+        // Cập nhật thông tin playlist
+        playlistMapper.updatePlaylistAdmin(dto, playlist, playlistMappingHelper);
+        // Upload ảnh đại diện
+        if (coverImage != null && !coverImage.isEmpty()) {
+            try {
+                String imgUrl = awsS3Service.uploadFile("playlist_img", coverImage,
+                        playlist.getPlaylistId());
+                playlist.setCoverImage(imgUrl);
+            } catch (Exception e) {
+                throw new RuntimeException("❌ Upload ảnh thất bại: " + e.getMessage(), e);
+            }
+        }
+        try {
+            return playlistRepository.save(playlist);
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi cập nhật bài hát: " + e.getMessage(), e);
+        }
     }
 
     public List<Playlist> getPlaylistsByUserId(Long userId) {
@@ -127,6 +169,13 @@ public class PlaylistService {
         }
 
         return playlistRepository.save(playlist);
+    }
+
+    @Transactional
+    public playlistResponse getPlaylistByIdResponse(Long id) {
+        Playlist playlist = playlistRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PLAYLIST_NOT_FOUND));
+        return playlistMapper.toPlaylistResponse(playlist);
     }
 
     // Xóa playlist

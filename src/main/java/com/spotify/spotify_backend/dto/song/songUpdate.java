@@ -13,8 +13,8 @@ import java.util.Set;
 public class songUpdate {
     Long songId;
     String songName;
-    Long artistId;
-    Long albumId;
+    Long artist_id;
+    Long album_id;
     Long duration;
     Set<Long> featuredArtistIds;
 }

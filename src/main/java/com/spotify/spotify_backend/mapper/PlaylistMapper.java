@@ -10,17 +10,34 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.Mappings;
 
 import com.spotify.spotify_backend.dto.artist.SimpleSongDTO;
+import com.spotify.spotify_backend.dto.playlist.playlistAdminDTO;
 import com.spotify.spotify_backend.dto.playlist.playlistDto;
 import com.spotify.spotify_backend.dto.playlist.playlistResponse;
 import com.spotify.spotify_backend.dto.playlist.playlistUp;
+import com.spotify.spotify_backend.dto.playlist.PlaylistUpdateAdminDTO;
 import com.spotify.spotify_backend.model.Playlist;
 import com.spotify.spotify_backend.model.Users;
 import com.spotify.spotify_backend.repository.UserRepository;
 
 @Mapper(componentModel = "spring")
 public interface PlaylistMapper {
+
         @Mapping(source = "userId", target = "user")
         Playlist toPlaylist(playlistDto dto, @Context UserRepository userRepository);
+
+        @Mapping(source = "userId", target = "user")
+        @Mapping(target = "playlistSongs", ignore = true)
+        Playlist toPlaylistAdmin(playlistAdminDTO dto, @Context UserRepository userRepository);
+
+        @Mappings({
+                        @Mapping(target = "user", expression = "java(helper.mapUser(dto.getUserId()))"),
+                        @Mapping(target = "playlistId", ignore = true),
+                        @Mapping(target = "playlistSongs", expression = "java(helper.mapSongIds(dto.getPlaylistSongIds()))"),
+                        @Mapping(target = "createAt", ignore = true),
+                        @Mapping(target = "status", ignore = true),
+        })
+        void updatePlaylistAdmin(PlaylistUpdateAdminDTO dto, @MappingTarget Playlist playlist,
+                        @Context PlaylistMappingHelper helper);
 
         default Users mapUser(Long userId, @Context UserRepository userRepository) {
                 return userRepository.findById(userId)
