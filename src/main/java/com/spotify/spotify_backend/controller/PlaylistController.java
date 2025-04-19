@@ -13,8 +13,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.spotify.spotify_backend.dto.ApiResponse;
 import com.spotify.spotify_backend.dto.PageResponseDTO;
+import com.spotify.spotify_backend.dto.playlist.playlistAdminDTO;
 import com.spotify.spotify_backend.dto.playlist.playlistDto;
+import com.spotify.spotify_backend.dto.playlist.playlistResponse;
 import com.spotify.spotify_backend.dto.playlist.playlistUp;
+import com.spotify.spotify_backend.dto.playlist.PlaylistUpdateAdminDTO;
 import com.spotify.spotify_backend.dto.playlistsong.showPlaylistSong;
 import com.spotify.spotify_backend.model.Playlist;
 import com.spotify.spotify_backend.service.PlaylistService;
@@ -54,9 +57,10 @@ public class PlaylistController {
             @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
             @RequestParam(value = "sortBy", defaultValue = "name", required = false) String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir) {
+            @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
+            @RequestParam(value = "status", required = false) Boolean status) {
 
-        Page<Playlist> page = playlistService.getAllPlaylistsPaged(pageNo, pageSize, sortBy, sortDir);
+        Page<Playlist> page = playlistService.getAllPlaylistsPaged(pageNo, pageSize, sortBy, sortDir, status);
 
         PageResponseDTO<Playlist> response = PageResponseDTO.<Playlist>builder()
                 .content(page.getContent())
@@ -126,18 +130,28 @@ public class PlaylistController {
     }
 
     @PostMapping(value = "/adminCreate", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-
     public ApiResponse<Playlist> createPlaylistAdmin(
-            @RequestPart("playlistDto") playlistDto newPlaylist,
-            @RequestPart("coverImage") MultipartFile coverImage,
-            @RequestPart(value = "playlistSongIds", required = false) List<Long> playlistSongIds) {
+            @RequestPart("playlistDto") playlistAdminDTO newPlaylist,
+            @RequestPart("coverImage") MultipartFile coverImage) {
+
         ApiResponse<Playlist> apiResponse = new ApiResponse<>();
         Playlist playlist = playlistService.createPlaylistAdmin(newPlaylist,
-                coverImage, playlistSongIds);
+                coverImage);
 
         apiResponse.setMessage("Playlist created successfully");
         apiResponse.setResult(playlist);
         apiResponse.setCode(1000);
+        return apiResponse;
+    }
+
+    @PutMapping(value = "/adminUpdate", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<Playlist> updatePlaylistAdmin(
+            @RequestPart("playlistUpdateDto") PlaylistUpdateAdminDTO playlistUpdateDto,
+            @RequestPart(value = "coverImage", required = false) MultipartFile coverImage) {
+        ApiResponse<Playlist> apiResponse = new ApiResponse<>();
+        Playlist playlist = playlistService.updatePlaylistAdmin(playlistUpdateDto, coverImage);
+        apiResponse.setResult(playlist);
+        apiResponse.setMessage("Playlist updated successfully");
         return apiResponse;
     }
 

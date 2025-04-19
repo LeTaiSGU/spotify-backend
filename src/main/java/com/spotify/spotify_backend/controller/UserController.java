@@ -29,26 +29,22 @@ public class UserController {
     }
 
     @GetMapping("/user/status")
-    // ApiResponse<PageResponseDTO<UserResponseDTO>>
-    public void getAllUsersByStatusPaginated(
+
+    public ApiResponse<PageResponseDTO<UserResponseDTO>> getAllUsersByStatusPaginated(
             @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
             @RequestParam(value = "sortBy", defaultValue = "userName", required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
             @RequestParam(value = "status", required = false) Boolean status) {
-        System.out.println("pageNo: " + pageNo);
-        System.out.println("pageSize: " + pageSize);
-        System.out.println("sortBy: " + sortBy);
-        System.out.println("sortDir: " + sortDir);
-        System.out.println("status: " + status);
-        // PageResponseDTO<UserResponseDTO> response = userService.getAllUsersPaginated(
-        // pageNo, pageSize, sortBy, sortDir, status);
 
-        // return ApiResponse.<PageResponseDTO<UserResponseDTO>>builder()
-        // .code(1000)
-        // .message("Lấy danh sách user thành công")
-        // .result(response)
-        // .build();
+        PageResponseDTO<UserResponseDTO> response = userService.getAllUsersPaginated(
+                pageNo, pageSize, sortBy, sortDir, status);
+
+        return ApiResponse.<PageResponseDTO<UserResponseDTO>>builder()
+                .code(1000)
+                .message("Lấy danh sách user thành công")
+                .result(response)
+                .build();
     }
 
     @GetMapping("/user/{userId}")

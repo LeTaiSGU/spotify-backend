@@ -53,20 +53,3 @@ public class AuthenticateController {
                 response.addCookie(cookie);
         }
 }
-
-@RestController
-@RequestMapping("/api/user")
-@RequiredArgsConstructor
-class UserController {
-
-        private final AuthenticateService authenticateService;
-
-        @GetMapping("/me")
-        public ResponseEntity<Users> getCurrentUser(@RequestHeader("Authorization") String token) {
-                if (token != null && token.startsWith("Bearer ")) {
-                        token = token.substring(7);
-                }
-                Users user = authenticateService.getCurrentUser(token);
-                return ResponseEntity.ok(user);
-        }
-}
