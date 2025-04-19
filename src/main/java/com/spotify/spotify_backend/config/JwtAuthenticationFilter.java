@@ -24,8 +24,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain)
             throws ServletException, IOException {
+
         String authHeader = request.getHeader("Authorization");
         System.out.println("Authorization Header: " + authHeader); // Debug header
 
@@ -67,7 +70,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         null,
                         Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role)));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-                System.out.println("Authentication set for user: " + email + " with role: " + role);
+                System.out.println("Authentication set for user: " + email + " with role: ROLE_" + role);
             } else {
                 System.out.println("Token validation failed for email: " + email);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
