@@ -2,8 +2,6 @@ package com.spotify.spotify_backend.dto.search;
 
 import java.time.LocalDate;
 
-import com.spotify.spotify_backend.dto.artist.ArtistResponseDTO;
-
 import lombok.Builder;
 import lombok.Data;
 

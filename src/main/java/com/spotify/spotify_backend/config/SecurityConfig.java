@@ -29,7 +29,6 @@ public class SecurityConfig {
                         "/api/auth/google",
                         "/",
                         "/api/search",
-
         };
 
         private static final String[] USER_ENDPOINTS = {
