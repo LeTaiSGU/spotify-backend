@@ -109,7 +109,6 @@ public class SongService {
 
         Song song = songMapper.toSong(songDto, songMappingHelper);
         song.setCreatedAt(LocalDate.now());
-        System.out.println(song);
         Song savedSong = songRepository.save(song);
 
         // Upload songFile và imgFile song song

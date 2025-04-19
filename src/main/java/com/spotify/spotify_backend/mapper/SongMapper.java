@@ -30,6 +30,7 @@ public interface SongMapper {
                         @Mapping(target = "artistId", source = "artist.artistId"),
                         @Mapping(target = "artistName", source = "artist.name"),
                         @Mapping(target = "albumId", source = "album.albumId"),
+                        @Mapping(target = "title", source = "album.title"),
                         @Mapping(target = "featuredArtists", expression = "java(mapFeaturedArtists(song.getFeaturedArtists()))")
         })
         songResponse toDto(Song song);

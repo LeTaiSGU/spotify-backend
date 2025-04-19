@@ -15,6 +15,7 @@ import lombok.Setter;
 public class songResponse {
     private Long songId;
     private Long albumId;
+    private String title;
     private Long artistId;
     private String artistName;
     private String songName;
