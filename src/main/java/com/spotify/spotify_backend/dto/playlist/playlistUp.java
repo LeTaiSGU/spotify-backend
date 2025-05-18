@@ -7,7 +7,5 @@ import lombok.Data;
 @Data
 public class playlistUp {
     private String name;
-    private Boolean isPrivate;
     private String description;
-    private Boolean status;
 }

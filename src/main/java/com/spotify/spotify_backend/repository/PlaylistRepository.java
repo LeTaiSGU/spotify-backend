@@ -17,5 +17,5 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
 
     Page<Playlist> findAllByStatus(Pageable pageable, Boolean status);
 
-    Page<Playlist> findAll(Pageable pageable); // Added this method to handle the status filter
+    Page<Playlist> findAll(Pageable pageable);
 }
