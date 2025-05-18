@@ -11,6 +11,7 @@ public class playlistAdminDTO {
     private Boolean isPrivate;
     private String coverImage;
     private String description;
+    private Boolean status = true;
     private Long userId;
     private List<Long> playlistSongIds;
 }

@@ -35,7 +35,7 @@ public class SongController {
                 List<songResponse> songList = songService.getAllSongs().stream()
                                 .map(song -> songMapper.toDto(song))
                                 .toList();
-                // List<Song> songList = songService.getAllSongs();
+
                 ApiResponse<List<songResponse>> apiResponse = ApiResponse.<List<songResponse>>builder()
                                 .code(1000)
                                 .result(songList)

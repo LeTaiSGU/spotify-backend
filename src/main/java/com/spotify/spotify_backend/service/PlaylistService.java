@@ -183,7 +183,7 @@ public class PlaylistService {
     public Playlist deletePlaylist(Long playlistId) {
         Playlist playlist = playlistRepository.findById(playlistId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy playlist với ID: " + playlistId));
-        playlist.setStatus(false);
+        playlist.setStatus(!playlist.getStatus());
         // Xóa avatar từ S3 trước
 
         return playlist;
